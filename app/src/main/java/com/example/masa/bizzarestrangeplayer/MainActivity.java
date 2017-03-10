@@ -25,16 +25,15 @@ public class MainActivity extends Activity implements
     // TODO: Replace with your redirect URI
     private static final String REDIRECT_URI = "spotify-player-sample-login://callback";
 
-    private static final int REQUEST_CODE = 1337;
+    private static final int REQUEST_CODE = 1;
 
     private Player mPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-        setContentView(R.layout.unko);
-
+        setContentView(R.layout.activity_main);
+        //
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
                 REDIRECT_URI);
@@ -75,7 +74,7 @@ public class MainActivity extends Activity implements
     @Override
     public void onLoggedIn() {
         Log.d("MainActivity", "User logged in");
-        //mPlayer.playUri(null, "spotify:track:2TpxZ7JUBn3uw46aR7qd6V", 0, 0);
+        // ギミチョコ!!
         mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
     }
 
