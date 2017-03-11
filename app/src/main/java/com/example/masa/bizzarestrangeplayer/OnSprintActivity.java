@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.google.gson.Gson;
+
 import static com.example.masa.bizzarestrangeplayer.MainActivity.mPlayer;
 
 public class OnSprintActivity extends AppCompatActivity {
@@ -28,6 +30,11 @@ public class OnSprintActivity extends AppCompatActivity {
 
     public void playPauseTapped(View v) {
         System.out.println("きてんだよ");
+
+        Gson gson = new Gson();
+
+//        JsonObject response = null;
+//        MusicModel model = gson.fromJson(response.toString(),MusicModel.class);
     }
 
     public void forwardTapped(View v) {

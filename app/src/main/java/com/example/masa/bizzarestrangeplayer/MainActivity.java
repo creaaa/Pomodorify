@@ -1,12 +1,15 @@
 package com.example.masa.bizzarestrangeplayer;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -17,6 +20,13 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
@@ -44,7 +54,55 @@ public class MainActivity extends AppCompatActivity implements
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
+        //
+
+        connectJsonAndParse();
+
     }
+
+
+    public void connectJsonAndParse() {
+
+        new AsyncTask<Void, String, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                // URLオブジェクト生成
+                URL url = null;
+                String serverUrl = "https://api.spotify.com/v1/artists/43ZHCT0cAZBISjO8DG9PnE/top-tracks?country=JP";
+
+                try {
+                    url = new URL(serverUrl);
+                    // サーバーへのネットワーク接続
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+                    // UTF-8で読み込む
+                    InputStreamReader is = new InputStreamReader(connection.getInputStream(), "UTF-8");
+                    // GsonライブラリのJSONリーダー（パーサー）
+                    JsonReader jsonReader = new JsonReader(is);
+                    // Gson生成
+                    Gson gson = new Gson();
+                    // fromJsonメソッドでJSONからJavaオブジェクトへの変換
+                    TrackModel data = gson.fromJson(jsonReader, TrackModel.class);
+
+                    System.out.println(data.getTracks().get(0).getName());
+                    System.out.println(data.getTracks().get(0).getPopularity());
+                    System.out.println(data.getTracks().get(0).getAvailableMarkets());
+
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        }.execute();
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
