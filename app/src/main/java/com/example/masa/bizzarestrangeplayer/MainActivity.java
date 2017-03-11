@@ -1,9 +1,11 @@
 package com.example.masa.bizzarestrangeplayer;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -16,7 +18,7 @@ import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
-public class MainActivity extends Activity implements
+public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
     // TODO: Replace with your client ID
@@ -27,7 +29,7 @@ public class MainActivity extends Activity implements
 
     private static final int REQUEST_CODE = 1;
 
-    private Player mPlayer;
+    static public Player mPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +73,13 @@ public class MainActivity extends Activity implements
     }
 
 
+    // onPlaybackEventの直後に来ます
     @Override
     public void onLoggedIn() {
+
         Log.d("MainActivity", "User logged in");
         // ギミチョコ!!
-        mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
+        // mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
     }
 
     @Override
@@ -123,5 +127,13 @@ public class MainActivity extends Activity implements
         // VERY IMPORTANT! This must always be called or else you will leak resources
         Spotify.destroyPlayer(this);
         super.onDestroy();
+    }
+
+    // Event listener
+    public void startSprint(View v) {
+        Toast.makeText(this, "hoge", Toast.LENGTH_SHORT).show();
+        //
+        Intent i = new Intent(this, OnSprintActivity.class);
+        startActivity(i);
     }
 }
