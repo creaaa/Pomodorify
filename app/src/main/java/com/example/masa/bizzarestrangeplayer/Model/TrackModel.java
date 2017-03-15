@@ -1,5 +1,5 @@
 
-package com.example.masa.bizzarestrangeplayer;
+package com.example.masa.bizzarestrangeplayer.Model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

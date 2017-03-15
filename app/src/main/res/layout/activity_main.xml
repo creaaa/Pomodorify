@@ -23,6 +23,6 @@
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="81dp"
-        android:onClick="startSprint"
+        android:onClick="connectMusicAnalyzeAndParse"
         android:text="Go!" />
 </RelativeLayout>

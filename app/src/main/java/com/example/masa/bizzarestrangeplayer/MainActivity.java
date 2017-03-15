@@ -1,13 +1,17 @@
+
 package com.example.masa.bizzarestrangeplayer;
 
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
+import com.example.masa.bizzarestrangeplayer.Model.TrackModel;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
@@ -27,6 +31,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
@@ -40,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final int REQUEST_CODE = 1;
 
     static public Player mPlayer;
+    private String mAccessToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,14 +66,79 @@ public class MainActivity extends AppCompatActivity implements
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
-        //
+        //connectTrackJsonAndParse();
+        //connectArtistJsonAndParse();
 
-        connectJsonAndParse();
+    }
+
+    String[] musicIDs = {
+            "3JIxjvbbDrA9ztYlNcp3yL",
+            "01iyCAUm8EvOFqVWYJ3dVX",
+            "5ztQHTm1YQqcTkQmgDEU4n"
+    };
+
+
+    public void times(View v) {
+        for (int i = 0; i < 1; i++) {
+            // connectMusicAnalyzeAndParse();
+        }
+        System.out.println("コンプリート！！");
+
+    }
+
+    public void connectMusicAnalyzeAndParse(View v) {
+
+        System.out.println("押されてる");
+
+        try {
+            // これはできる 3JIxjvbbDrA9ztYlNcp3yL
+            // スーパーカー 3p4ELetqoTwFpsnUkEirzc
+            // ダンシング・クイーン 01iyCAUm8EvOFqVWYJ3dVX
+            String songID = musicIDs[1];
+
+            URL url = new URL("https://api.spotify.com/v1/audio-analysis/" + songID);
+
+            final Request request = new Request.Builder()
+                    // URLを生成
+                    .url(url.toString())
+                    .get()
+                    .addHeader("Authorization","Bearer " + mAccessToken)
+                    .build();
+
+
+            // クライアントオブジェクトを作成する
+            final OkHttpClient client = new OkHttpClient();
+            // 新しいリクエストを行う
+            client.newCall(request).enqueue(new Callback() {
+                // 通信が成功した時
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    // 通信結果をログに出力する
+                    final String responseBody = response.body().string();
+                    //
+                    Log.d("OKHttp", responseBody);
+                }
+
+                // 通信が失敗した時
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("エラー♪");
+                        }
+                    });
+                }
+            });
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
 
     }
 
 
-    public void connectJsonAndParse() {
+    public void connectTrackJsonAndParse() {
 
         new AsyncTask<Void, String, Void>() {
 
@@ -90,6 +167,13 @@ public class MainActivity extends AppCompatActivity implements
                     System.out.println(data.getTracks().get(0).getPopularity());
                     System.out.println(data.getTracks().get(0).getAvailableMarkets());
 
+                    List<TrackModel.Track> tracks = data.getTracks();
+
+
+                    for (TrackModel.Track track: tracks) {
+                        System.out.println(track.getName());
+                    }
+
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 } catch (MalformedURLException e) {
@@ -103,15 +187,68 @@ public class MainActivity extends AppCompatActivity implements
         }.execute();
     }
 
+    public void connectArtistJsonAndParse() {
+
+        try {
+            URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
+
+            final Request request = new Request.Builder()
+                    // URLを生成
+                    .url(url.toString())
+                    .get()
+                    .addHeader("Authorization","Bearer " + mAccessToken)
+                    .build();
+
+
+            // クライアントオブジェクトを作成する
+            final OkHttpClient client = new OkHttpClient();
+            // 新しいリクエストを行う
+            client.newCall(request).enqueue(new Callback() {
+                // 通信が成功した時
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    // 通信結果をログに出力する
+                    final String responseBody = response.body().string();
+
+                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
+                    Log.d("OKHttp", "result: " + responseBody);
+
+                    final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
+
+                    System.out.println(result.getArtists().getItems().get(0).getName());
+                }
+
+                // 通信が失敗した時
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("エラー♪");
+                        }
+                    });
+                }
+            });
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+
         super.onActivityResult(requestCode, resultCode, intent);
 
         // Check if result comes from the correct activity
         if (requestCode == REQUEST_CODE) {
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+
+                // 追加！！いいの？？
+                mAccessToken = response.getAccessToken();
+
                 Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
                 Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                     @Override
