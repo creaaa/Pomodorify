@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Random;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -74,19 +75,22 @@ public class MainActivity extends AppCompatActivity implements
     String[] musicIDs = {
             "3JIxjvbbDrA9ztYlNcp3yL",
             "01iyCAUm8EvOFqVWYJ3dVX",
-            "5ztQHTm1YQqcTkQmgDEU4n"
+            "5ztQHTm1YQqcTkQmgDEU4n",
     };
 
 
     public void times(View v) {
-        for (int i = 0; i < 1; i++) {
-            // connectMusicAnalyzeAndParse();
+        for (int i = 0; i < 25; i++) {
+            connectMusicAnalyzeAndParse();
         }
         System.out.println("コンプリート！！");
 
     }
 
-    public void connectMusicAnalyzeAndParse(View v) {
+    private Handler handler = new Handler();
+
+
+    public void connectMusicAnalyzeAndParse() {
 
         System.out.println("押されてる");
 
@@ -94,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements
             // これはできる 3JIxjvbbDrA9ztYlNcp3yL
             // スーパーカー 3p4ELetqoTwFpsnUkEirzc
             // ダンシング・クイーン 01iyCAUm8EvOFqVWYJ3dVX
-            String songID = musicIDs[1];
+            String songID = musicIDs[new Random().nextInt(3)];
 
             URL url = new URL("https://api.spotify.com/v1/audio-analysis/" + songID);
 
@@ -123,10 +127,13 @@ public class MainActivity extends AppCompatActivity implements
                 // 通信が失敗した時
                 @Override
                 public void onFailure(Call call, final IOException e) {
-                    new Handler().post(new Runnable() {
+                    // new Handler().post って書いてたから、
+                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
+                    // で落ちてた？？？
+                    handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            System.out.println("エラー♪");
+                            Log.d("OKHttp", "エラー♪");
                         }
                     });
                 }
