@@ -6,23 +6,65 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/loginStateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="14dp"
+        android:text="Login: OK"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/setStateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/nowMusicTextView"
+        android:layout_alignEnd="@+id/timerTextView"
+        android:layout_marginEnd="18dp"
+        android:text="Set: 0"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/nowMusicTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:background="@android:color/holo_blue_bright"
-        android:text="Sprint 0"
+        android:layout_below="@+id/loginStateTextView"
+        android:layout_marginTop="37dp"
+        android:background="@color/colorAccent"
+        android:text="Babymetal - the one -"
         android:textAlignment="center"
-        android:textSize="36dp" />
+        android:textSize="30sp" />
 
-    <Button
-        android:id="@+id/button"
+    <TextView
+        android:id="@+id/timerTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="81dp"
-        android:onClick="startSprint"
-        android:text="Go!" />
+        android:layout_centerVertical="true"
+        android:text="99:59"
+        android:textSize="72sp" />
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:text="Cancel"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/loginStateTextView"
+        android:layout_marginBottom="73dp" />
+
+    <ToggleButton
+        android:id="@+id/playerToggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/cancelButton"
+        android:layout_marginEnd="44dp"
+        android:text="ToggleButton"
+        android:textOff="Play"
+        android:textOn="Pause" />
 </RelativeLayout>

@@ -97,9 +97,15 @@ public class MainActivity extends AppCompatActivity implements
         try {
 
             // セトリのrecomendation
-            URL url = new URL("https://api.spotify.com/v1/recommendations?seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50&market=US&limit=10");
+            URL url = new URL("https://api.spotify.com/v1/recommendations?" +
+                    "seed_artists=4NHQUGzhtTLFvgF5SZesLK&" +
+                    "seed_tracks=0c6xIDDpzE81m2q797ordA&" +
+                    "min_energy=0.4&" +
+                    "min_popularity=50&" +
+                    "market=US&limit=10");
 
             //URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
+
 
             final Request request = new Request.Builder()
                     // URLを生成
@@ -107,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements
                     .get()
                     .addHeader("Authorization", "Bearer " + mAccessToken)
                     .build();
+
 
             // クライアントオブジェクトを作成する
             final OkHttpClient client = new OkHttpClient();
@@ -122,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements
 //                    Log.d("OKHttp", "result: " + responseBody);
 //                    final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
 //                    System.out.println(result.getArtists().getItems().get(0).getName());
-
 
 
                     ///// 動く /////
@@ -148,11 +154,6 @@ public class MainActivity extends AppCompatActivity implements
                     for (int i = 0; i < result.getTracks().size(); i++) {
                         System.out.println(result.getTracks().get(i).getId());
                     }
-
-
-
-
-
 
                 }
 
