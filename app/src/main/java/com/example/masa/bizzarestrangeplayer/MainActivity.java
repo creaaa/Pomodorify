@@ -4,11 +4,19 @@ package com.example.masa.bizzarestrangeplayer;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
 import com.example.masa.bizzarestrangeplayer.Model.TrackForPLModel;
@@ -44,13 +52,34 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
-    // TODO: Replace with your client ID
+
+    /* UI */
+    TextView loginStateTextView, setStateTextView;
+    TextView nowMusicTextView;
+    TextView timerTextView;
+    Button cancelButton;
+    ToggleButton playerToggleButton;
+
+    /* Timer setting class */
+    private CountDown countDown;
+
+    int set = 0; // current set
+
+
+    // Time interval(主に内部処理用)
+    private Long ti;
+
+    // set by user(Milli Seconds)
+    private Long workoutTime;
+    private Long breakTime;
+    private Long prepareTime;
+
+
+
     private static final String CLIENT_ID = "8482782774f44e5681ee617adcf6b3f6";
-
-    // TODO: Replace with your redirect URI
     private static final String REDIRECT_URI = "spotify-player-sample-login://callback";
-
     private static final int REQUEST_CODE = 1;
+
 
     static public Player mPlayer;
     private String mAccessToken;
@@ -61,9 +90,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //
+
+
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
                 REDIRECT_URI);
@@ -72,10 +103,85 @@ public class MainActivity extends AppCompatActivity implements
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
+
+        /* UI componet initialize */
+        loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
+        setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
+        nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
+        timerTextView      = (TextView) findViewById(R.id.timerTextView);
+
+        cancelButton       = (Button) findViewById(R.id.cancelButton);
+        playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
+
+
+        // shared prefから、ポモドーロの間隔をロード
+        workoutTime = 10000l;
+        breakTime = 5000l;
+        prepareTime = 1000l;
+
+
+        // まず、インターバル間隔が決まったら、その後で・・
+        ti = Long.valueOf(workoutTime);
+
+        // textViewを更新
+        long mm = ti / 1000 / 60;
+        long ss = ti / 1000 % 60;
+
+        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+
+
+        playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // 状態が変更された
+                Toast.makeText(MainActivity.this, "isChecked : " + isChecked, Toast.LENGTH_SHORT).show();
+
+                if (isChecked) {
+
+                    //中止したtimeを取得
+                    String   tmp1 = timerTextView.getText().toString();
+                    //timeを分と秒に分ける
+                    String[] tmp2 = tmp1.split(":", 0);
+
+                    int mnt = Integer.parseInt(tmp2[0]) * 1000 * 60;
+                    int scd = Integer.parseInt(tmp2[1]) * 1000;
+
+                    if (ti != null) {
+                        System.out.println("残り時間: " + ti);
+                        countDown = new CountDown(ti, 1000);
+                    }
+                    countDown.start();
+                } else {
+                    countDown.cancel();
+                }
+            }
+        });
+
+
+        cancelButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                // 中止
+                countDown.cancel();
+                ti = Long.valueOf(workoutTime);
+
+                long mm = ti / 1000 / 60;
+                long ss = ti / 1000 % 60;
+
+                timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+
+                playerToggleButton.setChecked(false);
+            }
+        });
+
+        // アクセストークンの有無をラベルに表示
+        renewLoginStateTextView();
+
+
         //connectTrackJsonAndParse();
         //connectArtistJsonAndParse();
-
     }
+
 
     String[] musicIDs = {
             "3JIxjvbbDrA9ztYlNcp3yL",
@@ -425,4 +531,78 @@ public class MainActivity extends AppCompatActivity implements
         Intent i = new Intent(this, OnSprintActivity.class);
         startActivity(i);
     }
+
+
+    /* アクションバーに設定画面へのボタン追加 */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.pref:
+                System.out.println("ほげー");
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+    private class CountDown extends CountDownTimer {
+
+        public CountDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onFinish() {
+
+            // 完了
+            playerToggleButton.setChecked(false); // toggleボタンをオフにする
+
+            ti = Long.valueOf(workoutTime);
+
+            long mm = ti / 1000 / 60;
+            long ss = ti / 1000 % 60;
+
+            timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+
+            System.out.println("Finiしぇ！");
+
+        }
+
+        // Timerのカウント周期で呼ばれる
+        @Override
+        public void onTick(long millisUntilFinished) {
+            // 残り時間を分、秒、ミリ秒に分割
+            long mm = millisUntilFinished / 1000 / 60;
+            long ss = millisUntilFinished / 1000 % 60;
+            // long ms = millisUntilFinished - ss * 1000 - mm * 1000 * 60;
+
+            //timerText.setText(String.format("%1$02d:%2$02d.%3$03d", mm, ss, ms));
+            timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+
+            ti = millisUntilFinished;
+        }
+    }
+
+
+    /* Helper Method */
+
+    public void renewLoginStateTextView() {
+        if (mAccessToken != null) {
+            loginStateTextView.setText("Login: OK");
+        } else {
+            loginStateTextView.setText("Login: NG");
+        }
+    }
+
+
 }
