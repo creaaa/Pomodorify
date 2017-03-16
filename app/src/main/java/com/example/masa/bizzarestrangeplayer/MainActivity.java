@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
+import com.example.masa.bizzarestrangeplayer.Model.TrackForPLModel;
 import com.example.masa.bizzarestrangeplayer.Model.TrackModel;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -54,6 +55,10 @@ public class MainActivity extends AppCompatActivity implements
     static public Player mPlayer;
     private String mAccessToken;
 
+
+    private Handler handler = new Handler();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,14 +85,91 @@ public class MainActivity extends AppCompatActivity implements
 
 
     public void times(View v) {
-        for (int i = 0; i < 25; i++) {
-            connectMusicAnalyzeAndParse();
-        }
-        System.out.println("コンプリート！！");
 
+        for (int i = 0; i < 1; i++) {
+            createPlaylists("hoge");
+        }
     }
 
-    private Handler handler = new Handler();
+
+    public void createPlaylists(String seed) {
+
+        try {
+
+            // セトリのrecomendation
+            URL url = new URL("https://api.spotify.com/v1/recommendations?seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50&market=US&limit=1");
+
+            //URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
+
+            final Request request = new Request.Builder()
+                    // URLを生成
+                    .url(url.toString())
+                    .get()
+                    .addHeader("Authorization", "Bearer " + mAccessToken)
+                    .build();
+
+            // クライアントオブジェクトを作成する
+            final OkHttpClient client = new OkHttpClient();
+            // 新しいリクエストを行う
+            client.newCall(request).enqueue(new Callback() {
+                // 通信が成功した時
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+//                    // 通信結果をログに出力する
+//                    final String responseBody = response.body().string();
+//                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
+//                    Log.d("OKHttp", "result: " + responseBody);
+//                    final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
+//                    System.out.println(result.getArtists().getItems().get(0).getName());
+
+
+
+                    ///// 動く /////
+
+                    // 通信結果をログに出力する
+                    //final String responseBody = response.body().string();
+//                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
+//                    Log.d("OKHttp", "result: " + responseBody);
+
+                    //final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
+                    //System.out.println(result.getArtists().getItems().get(0).getName());
+
+                    ///// 動く /////
+
+
+                    // ↓動かない
+                    final String responseBody = response.body().string();
+//                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
+                    Log.d("OKHttp", "" + responseBody);
+
+                    final TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
+                    System.out.println(result);
+
+
+
+
+
+                }
+
+                // 通信が失敗した時
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    // new Handler().post って書いてたから、
+                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
+                    // で落ちてた？？？
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("OKHttp", "エラー♪");
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+
+        }
+    }
 
 
     public void connectMusicAnalyzeAndParse() {
