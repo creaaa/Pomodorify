@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements
         try {
 
             // セトリのrecomendation
-            URL url = new URL("https://api.spotify.com/v1/recommendations?seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50&market=US&limit=1");
+            URL url = new URL("https://api.spotify.com/v1/recommendations?seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50&market=US&limit=10");
 
             //URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
 
@@ -141,10 +141,14 @@ public class MainActivity extends AppCompatActivity implements
                     // ↓動かない
                     final String responseBody = response.body().string();
 //                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
-                    Log.d("OKHttp", "" + responseBody);
+                    //Log.d("OKHttp", "" + responseBody);
 
                     final TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
-                    System.out.println(result);
+
+                    for (int i = 0; i < result.getTracks().size(); i++) {
+                        System.out.println(result.getTracks().get(i).getId());
+                    }
+
 
 
 

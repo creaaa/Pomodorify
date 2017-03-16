@@ -22,7 +22,17 @@ public class OnSprintActivity extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.iv_album_player);
         imageView.setImageResource(R.drawable.fever);
         //
-        mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
+        // mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
+        mPlayer.playUri(null, "spotify:track:7xAdO0zdl7lGf0ecg4IGhQ", 0, 0);
+
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        mPlayer.seekToPosition(null, 100000);
+//        mPlayer.playUri(null, "spotify:track:7xAdO0zdl7lGf0ecg4IGhQ", 0, 0);
+
     }
 
     public void backTapped(View v) {

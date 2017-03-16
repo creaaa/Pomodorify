@@ -23,6 +23,6 @@
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="81dp"
-        android:onClick="times"
+        android:onClick="startSprint"
         android:text="Go!" />
 </RelativeLayout>
