@@ -3,6 +3,8 @@ package com.example.masa.bizzarestrangeplayer.Activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -16,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -35,6 +38,7 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,10 +59,21 @@ public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
 
+    private enum TimerState {
+        Workout, Break, Prepare, none;
+    }
+
+
     SharedPreferences pref;
 
+    TimerState state = TimerState.none;
+
+
     /* UI */
-    TextView loginStateTextView, setStateTextView;
+
+    ImageView jacketImageView;
+
+    TextView loginStateTextView, setStateTextView, timerStateTextView;
     TextView nowMusicTextView;
     TextView timerTextView;
     Button cancelButton;
@@ -111,13 +126,36 @@ public class MainActivity extends AppCompatActivity implements
 
 
         /* UI componet initialize */
+
+        jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
+
         loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
         setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
+        timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
         nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
         timerTextView      = (TextView) findViewById(R.id.timerTextView);
 
         cancelButton       = (Button) findViewById(R.id.cancelButton);
         playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
+
+
+        float br = -125;
+
+        ColorMatrix cmx = new ColorMatrix(new float[] {
+
+                  1, 0, 0, 0, br // brightness
+                , 0, 1, 0, 0, br // brightness
+                , 0, 0, 1, 0, br // brightness
+                , 0, 0, 0, 1, 0 });
+
+        jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
+        jacketImageView.setAlpha(0.8f);
+
+        Picasso.with(getApplicationContext()).load(R.drawable.fever).into(jacketImageView);
+
+        jacketImageView.invalidate();
+
+
 
 
         // shared prefから、ポモドーロの間隔をロード
@@ -126,7 +164,8 @@ public class MainActivity extends AppCompatActivity implements
 
         System.out.println("おらワークアウト！" + workoutTime);
 
-        breakTime = 5000l;
+        breakTime = Long.valueOf(pref.getString("break_time", "8000"));
+
         prepareTime = 1000l;
 
         final Long MAX_TIMES = Long.valueOf(pref.getString("set", "4"));
@@ -146,8 +185,6 @@ public class MainActivity extends AppCompatActivity implements
         playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // 状態が変更された
-                Toast.makeText(MainActivity.this, "isChecked : " + isChecked, Toast.LENGTH_SHORT).show();
 
                 if (isChecked) {
 
@@ -163,8 +200,15 @@ public class MainActivity extends AppCompatActivity implements
                         System.out.println("残り時間: " + ti);
                         countDown = new CountDown(ti, 1000);
                     }
+
+                    state = TimerState.Workout;
+                    timerStateTextView.setText("WORKOUT");
+
                     countDown.start();
                 } else {
+                    state = TimerState.none;
+                    timerStateTextView.setText("NONE");
+
                     countDown.cancel();
                 }
             }
@@ -176,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements
             public void onClick(View v) {
                 // 中止
                 countDown.cancel();
-                ti = Long.valueOf(workoutTime);
+                ti = Long.valueOf(breakTime);
 
                 long mm = ti / 1000 / 60;
                 long ss = ti / 1000 % 60;
@@ -201,15 +245,21 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        System.out.println("おらresume!" + pref.getString("workout_time", "ぼけ"));
 
-        workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
 
-        ti = Long.valueOf(workoutTime);
+        if (state == TimerState.Break) {
 
-        long mm = ti / 1000 / 60;
-        long ss = ti / 1000 % 60;
-        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+        } else {
+            System.out.println("おらresume!" + pref.getString("workout_time", "ぼけ"));
+
+            workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
+
+            ti = Long.valueOf(workoutTime);
+
+            long mm = ti / 1000 / 60;
+            long ss = ti / 1000 % 60;
+            timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+        }
 
     }
 
@@ -603,20 +653,36 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void onFinish() {
 
-            // 完了
-            playerToggleButton.setChecked(false); // toggleボタンをオフにする
+            switch (state) {
 
-            ti = Long.valueOf(workoutTime);
+                case Workout:
 
-            long mm = ti / 1000 / 60;
-            long ss = ti / 1000 % 60;
+                    playerToggleButton.setChecked(false); // toggleボタンをオフにする
 
-            timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+                    ti = Long.valueOf(breakTime);
+                    long mm = ti / 1000 / 60;
+                    long ss = ti / 1000 % 60;
+                    timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
 
-            System.out.println("Finiしぇ！");
+                    countDown = new CountDown(ti, 1000);
+                    countDown.start();
 
-            launchSetListActivity();
+                    state = TimerState.Break;
+                    timerStateTextView.setText("BREAK");
 
+                    playerToggleButton.setVisibility(View.GONE);
+
+
+                    launchSetListActivity();
+
+                    break;
+
+                case Break:
+
+
+                default:
+                    break;
+            };
         }
 
         // Timerのカウント周期で呼ばれる
@@ -649,7 +715,4 @@ public class MainActivity extends AppCompatActivity implements
         Intent i = new Intent(this, SetListResultActivity.class);
         startActivity(i);
     }
-
-
-
 }
