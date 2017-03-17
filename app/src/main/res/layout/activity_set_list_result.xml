@@ -30,14 +30,14 @@
         android:layout_alignParentStart="true" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/remainingBreakTimeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="next set: 99:59"
         android:textSize="16sp"
-        android:layout_alignBottom="@+id/ratingBar"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="17dp" />
+        android:layout_below="@+id/textView3"
+        android:layout_toEndOf="@+id/ratingBar"
+        android:layout_marginStart="19dp" />
 
     <ListView
         android:id="@+id/setListListView"
@@ -64,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/textView2"
+        android:layout_alignStart="@+id/remainingBreakTimeTextView"
         android:text="Select All" />
 
 </RelativeLayout>

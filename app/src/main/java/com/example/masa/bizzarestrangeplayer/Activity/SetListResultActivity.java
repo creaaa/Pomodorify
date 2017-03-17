@@ -2,8 +2,11 @@
 package com.example.masa.bizzarestrangeplayer.Activity;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -31,6 +34,13 @@ public class SetListResultActivity extends AppCompatActivity {
     public ArrayList<Song> songs;
     public Boolean[] isCheckedArray = new Boolean[]{};
 
+    TextView remainingBreakTimeTextView;
+
+
+    private CountDown countDown;
+    Long breakTime;
+    SharedPreferences pref;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +53,20 @@ public class SetListResultActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.setListListView);
         adapter = new MyAdapter(this, R.layout.song_cell);
+
+        remainingBreakTimeTextView = (TextView) findViewById(R.id.remainingBreakTimeTextView);
+
+
+        /* Timer Setting */
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        breakTime = Long.valueOf(pref.getString("break_time", "9000"));
+
+        if (breakTime != null) {
+            System.out.println("残り休憩時間: " + breakTime);
+            countDown = new CountDown(breakTime, 1000);
+            countDown.start();
+        }
+
 
         songs = new ArrayList<>();
 
@@ -123,6 +147,13 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
     @Override
+    protected void onStop() {
+        countDown = null;
+        System.out.println("タイマーは あとかたもなく ぶっこわれた");
+        super.onStop();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
@@ -194,6 +225,38 @@ public class SetListResultActivity extends AppCompatActivity {
         }
 
     }
+
+
+
+    private class CountDown extends CountDownTimer {
+
+        public CountDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+
+        @Override
+        public void onFinish() {
+            finish();
+        }
+
+
+        // Timerのカウント周期で呼ばれる
+        @Override
+        public void onTick(long millisUntilFinished) {
+            // 残り時間を分、秒、ミリ秒に分割
+            long mm = millisUntilFinished / 1000 / 60;
+            long ss = millisUntilFinished / 1000 % 60;
+            // long ms = millisUntilFinished - ss * 1000 - mm * 1000 * 60;
+
+            //timerText.setText(String.format("%1$02d:%2$02d.%3$03d", mm, ss, ms));
+            remainingBreakTimeTextView.setText(String.format("Remaining: %1$02d:%2$02d", mm, ss));
+
+            breakTime = millisUntilFinished;
+        }
+    }
+
+
 
 
     private class Song {

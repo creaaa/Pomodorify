@@ -14,6 +14,7 @@ public class MyConfigActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
+
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(android.R.id.content, new MyConfigFragment());
         fragmentTransaction.commit();

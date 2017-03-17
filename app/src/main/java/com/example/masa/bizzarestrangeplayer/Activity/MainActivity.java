@@ -2,10 +2,12 @@
 package com.example.masa.bizzarestrangeplayer.Activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -53,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
 
+    SharedPreferences pref;
+
     /* UI */
     TextView loginStateTextView, setStateTextView;
     TextView nowMusicTextView;
@@ -63,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements
     /* Timer setting class */
     private CountDown countDown;
 
-    int set = 0; // current set
+    int currentSet = 1; // current set
 
 
     // Time interval(主に内部処理用)
@@ -103,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements
 //
 //        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
 
 
         /* UI componet initialize */
@@ -116,9 +121,15 @@ public class MainActivity extends AppCompatActivity implements
 
 
         // shared prefから、ポモドーロの間隔をロード
-        workoutTime = 3000l;
+//        workoutTime = 3000l;
+        workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
+
+        System.out.println("おらワークアウト！" + workoutTime);
+
         breakTime = 5000l;
         prepareTime = 1000l;
+
+        final Long MAX_TIMES = Long.valueOf(pref.getString("set", "4"));
 
 
         // まず、インターバル間隔が決まったら、その後で・・
@@ -127,8 +138,9 @@ public class MainActivity extends AppCompatActivity implements
         // textViewを更新
         long mm = ti / 1000 / 60;
         long ss = ti / 1000 % 60;
-
         timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+
+        setStateTextView.setText(String.format("Set: %1$02d / %2$02d", currentSet, MAX_TIMES));
 
 
         playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -185,6 +197,21 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        System.out.println("おらresume!" + pref.getString("workout_time", "ぼけ"));
+
+        workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
+
+        ti = Long.valueOf(workoutTime);
+
+        long mm = ti / 1000 / 60;
+        long ss = ti / 1000 % 60;
+        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+
+    }
 
     String[] musicIDs = {
             "3JIxjvbbDrA9ztYlNcp3yL",

@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--<com.example.preference.NumberPickerPreference-->
-        <!--android:key="key_number"-->
-        <!--android:title="Give me a number"-->
-        <!--android:defaultValue="55" />-->
-    <EditTextPreference
-        android:defaultValue="ゲスト"
-        android:key="edittext_name"
-        android:summary="スプリント時間を設定します"
-        android:title="ユーザー名" />
+    <PreferenceCategory android:title="Timer Sets">
+    <ListPreference
+        android:defaultValue="1500000"
+        android:key="workout_time"
+        android:summary="Designate workout time.(Minutes)"
+        android:title="Workout Time"
+        android:entries="@array/picker_nums"
+        android:entryValues="@array/picker_nums_min"
+        />
+
+    <ListPreference
+        android:defaultValue="300000"
+        android:key="break_time"
+        android:summary="Designate break time.(Minutes)"
+        android:title="Break Time"
+        android:entries="@array/picker_nums"
+        android:entryValues="@array/picker_nums_min"
+        />
+
+    <ListPreference
+        android:defaultValue="100000"
+        android:key="prepare_time"
+        android:summary="Designate prepare time.(Seconds)"
+        android:title="Prepare Time"
+        android:entries="@array/picker_nums"
+        android:entryValues="@array/picker_nums_sec"
+        />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Sets">
+
+    <ListPreference
+        android:defaultValue="1"
+        android:key="set"
+        android:summary="Designate Sets."
+        android:title="Sets"
+        android:entries="@array/sets"
+        android:entryValues="@array/sets"
+        />
+
+    </PreferenceCategory>
 </PreferenceScreen>

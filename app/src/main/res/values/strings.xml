@@ -3,4 +3,58 @@
     <string name="com_spotify_sdk_redirect_scheme">spotify-player-sample-login</string>
     <string name="com_spotify_sdk_redirect_host">callback</string>
     <string name="title_activity_on_sprint">OnSprintActivity</string>
+
+    <string-array name="picker_nums">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>40</item>
+        <item>50</item>
+        <item>60</item>
+    </string-array>
+
+
+    <string-array name="picker_nums_min">
+        <item>5000</item>
+        <item>15000</item>
+        <item>900000</item>
+        <item>1200000</item>
+        <item>1500000</item>
+        <item>1800000</item>
+        <item>2400000</item>
+        <item>3000000</item>
+        <item>3600000</item>
+    </string-array>
+
+
+    <string-array name="picker_nums_sec">
+        <item>5000</item>
+        <item>10000</item>
+        <item>15000</item>
+        <item>20000</item>
+        <item>25000</item>
+        <item>30000</item>
+        <item>40000</item>
+        <item>50000</item>
+        <item>60000</item>
+    </string-array>
+
+
+    <string-array name="sets">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
+
+
 </resources>
