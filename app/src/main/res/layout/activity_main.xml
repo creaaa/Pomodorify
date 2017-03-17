@@ -45,6 +45,7 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:text="99:59"
+        android:textColor="?android:attr/editTextColor"
         android:textSize="72sp" />
 
     <Button

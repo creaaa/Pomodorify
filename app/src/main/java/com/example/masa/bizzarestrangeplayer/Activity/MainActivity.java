@@ -95,9 +95,6 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-
-
-
 //        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
 //                AuthenticationResponse.Type.TOKEN,
 //                REDIRECT_URI);
@@ -105,10 +102,6 @@ public class MainActivity extends AppCompatActivity implements
 //        AuthenticationRequest request = builder.build();
 //
 //        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
-
-
-
-
 
 
 
@@ -182,12 +175,14 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        // アクセストークンの有無をラベルに表示
-        renewLoginStateTextView();
+        // アクセストークンの有無をラベルに表示→ここ、authがまさか非同期→ダメなのか？
+        //renewLoginStateTextView();
 
 
         //connectTrackJsonAndParse();
         //connectArtistJsonAndParse();
+
+
     }
 
 
@@ -464,11 +459,15 @@ public class MainActivity extends AppCompatActivity implements
                         mPlayer = spotifyPlayer;
                         mPlayer.addConnectionStateCallback(MainActivity.this);
                         mPlayer.addNotificationCallback(MainActivity.this);
+
+                        renewLoginStateTextView();
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
                         Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
+
+                        renewLoginStateTextView();
                     }
                 });
             }
@@ -554,7 +553,12 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.pref:
+
                 System.out.println("ほげー");
+
+                Intent i = new Intent(this, MyConfigActivity.class);
+                startActivity(i);
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

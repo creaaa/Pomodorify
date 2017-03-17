@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--<com.example.preference.NumberPickerPreference-->
+        <!--android:key="key_number"-->
+        <!--android:title="Give me a number"-->
+        <!--android:defaultValue="55" />-->
+    <EditTextPreference
+        android:defaultValue="ゲスト"
+        android:key="edittext_name"
+        android:summary="スプリント時間を設定します"
+        android:title="ユーザー名" />
+</PreferenceScreen>

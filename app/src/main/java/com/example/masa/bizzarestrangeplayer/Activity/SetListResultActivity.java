@@ -100,8 +100,10 @@ public class SetListResultActivity extends AppCompatActivity {
                 }
 
                 // 通知
-                //Toast.makeText(getApplicationContext(), sb.toString(), Toast.LENGTH_SHORT).show();
-                Log.d("SETLIST", sb.substring(0, sb.length()-1));
+                if (sb.toString() != String.valueOf("")) {
+                    Log.d("SETLIST", sb.substring(0, sb.length() - 1));
+                }
+                finish();
             }
         });
 
