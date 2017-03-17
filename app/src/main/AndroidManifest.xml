@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".Activity.MainActivity"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -24,7 +24,11 @@
         </activity>
 
         <activity
-            android:name=".OnSprintActivity">
+            android:name=".Activity.SetListResultActivity">
+        </activity>
+
+        <activity
+            android:name=".Activity.OnSprintActivity">
         </activity>
 
         <!-- Needed for LoginActivity to work -->

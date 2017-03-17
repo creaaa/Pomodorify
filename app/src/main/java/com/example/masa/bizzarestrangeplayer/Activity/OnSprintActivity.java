@@ -1,13 +1,12 @@
-package com.example.masa.bizzarestrangeplayer;
+package com.example.masa.bizzarestrangeplayer.Activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.masa.bizzarestrangeplayer.R;
 import com.google.gson.Gson;
-
-import static com.example.masa.bizzarestrangeplayer.MainActivity.mPlayer;
 
 public class OnSprintActivity extends AppCompatActivity {
 
@@ -23,7 +22,7 @@ public class OnSprintActivity extends AppCompatActivity {
         imageView.setImageResource(R.drawable.fever);
         //
         // mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
-        mPlayer.playUri(null, "spotify:track:7xAdO0zdl7lGf0ecg4IGhQ", 0, 0);
+        MainActivity.mPlayer.playUri(null, "spotify:track:7xAdO0zdl7lGf0ecg4IGhQ", 0, 0);
 
 //        try {
 //            Thread.sleep(5000);

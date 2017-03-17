@@ -1,5 +1,5 @@
 
-package com.example.masa.bizzarestrangeplayer;
+package com.example.masa.bizzarestrangeplayer.Activity;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -21,10 +21,10 @@ import android.widget.ToggleButton;
 import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
 import com.example.masa.bizzarestrangeplayer.Model.TrackForPLModel;
 import com.example.masa.bizzarestrangeplayer.Model.TrackModel;
+import com.example.masa.bizzarestrangeplayer.R;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
@@ -95,13 +95,21 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-                AuthenticationResponse.Type.TOKEN,
-                REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private", "streaming"});
-        AuthenticationRequest request = builder.build();
 
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+
+//        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
+//                AuthenticationResponse.Type.TOKEN,
+//                REDIRECT_URI);
+//        builder.setScopes(new String[]{"user-read-private", "streaming"});
+//        AuthenticationRequest request = builder.build();
+//
+//        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+
+
+
+
 
 
         /* UI componet initialize */
@@ -115,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
         // shared prefから、ポモドーロの間隔をロード
-        workoutTime = 10000l;
+        workoutTime = 3000l;
         breakTime = 5000l;
         prepareTime = 1000l;
 
@@ -576,6 +584,8 @@ public class MainActivity extends AppCompatActivity implements
 
             System.out.println("Finiしぇ！");
 
+            launchSetListActivity();
+
         }
 
         // Timerのカウント周期で呼ばれる
@@ -603,6 +613,12 @@ public class MainActivity extends AppCompatActivity implements
             loginStateTextView.setText("Login: NG");
         }
     }
+
+    public void launchSetListActivity() {
+        Intent i = new Intent(this, SetListResultActivity.class);
+        startActivity(i);
+    }
+
 
 
 }
