@@ -11,54 +11,73 @@ public class Track {
     @SerializedName("album")
     @Expose
     private Album album;
+
     @SerializedName("artists")
     @Expose
     private List<Artist> artists = null;
+
     @SerializedName("disc_number")
     @Expose
     private Integer discNumber;
+
     @SerializedName("duration_ms")
     @Expose
     private Integer durationMs;
+
     @SerializedName("explicit")
     @Expose
     private Boolean explicit;
+
     @SerializedName("external_ids")
     @Expose
     private ExternalIds externalIds;
+
     @SerializedName("external_urls")
     @Expose
     private ExternalUrls externalUrls;
+
     @SerializedName("href")
     @Expose
     private String href;
+
     @SerializedName("id")
     @Expose
     private String id;
+
     @SerializedName("is_playable")
     @Expose
     private Boolean isPlayable;
+
     @SerializedName("linked_from")
     @Expose
     private LinkedFrom linkedFrom;
+
     @SerializedName("name")
     @Expose
     private String name;
+
     @SerializedName("popularity")
     @Expose
     private Integer popularity;
+
     @SerializedName("preview_url")
     @Expose
     private String previewUrl;
+
     @SerializedName("track_number")
     @Expose
     private Integer trackNumber;
+
     @SerializedName("type")
     @Expose
     private String type;
+
     @SerializedName("uri")
     @Expose
     private String uri;
+
+
+
 
     public Album getAlbum() {
         return album;

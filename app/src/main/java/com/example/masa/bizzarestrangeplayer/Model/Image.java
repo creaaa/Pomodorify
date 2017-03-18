@@ -9,12 +9,17 @@ public class Image {
     @SerializedName("height")
     @Expose
     private Integer height;
+
     @SerializedName("url")
     @Expose
     private String url;
+
     @SerializedName("width")
     @Expose
     private Integer width;
+
+
+
 
     public Integer getHeight() {
         return height;

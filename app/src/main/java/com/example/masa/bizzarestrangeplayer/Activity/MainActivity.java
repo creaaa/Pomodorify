@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -73,7 +74,10 @@ public class MainActivity extends AppCompatActivity implements
     ArrayList<String> musicIDArray = new ArrayList<>();
 
     // レスポンスjsonからGSON化したプレイリストデータ
-    TrackForPLModel result;
+    // TrackForPLModel result;
+
+    // TrackForPLModelのうち、workout minutesぶんに調整された、実際にかけるプレイリスト
+    ArrayList<Track> currentSetPlaylist = new ArrayList<>();
 
 
 
@@ -130,8 +134,6 @@ public class MainActivity extends AppCompatActivity implements
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
-
-
 
 
 
@@ -214,9 +216,9 @@ public class MainActivity extends AppCompatActivity implements
 
                     countDown.start();
 
+                    // TODO:
                     createPlaylists("");
 
-                    // TODO:
 
                 } else {  // 再生中のとき、一時停止する
 
@@ -687,28 +689,47 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-    private void playMusic(String musicID) {
+    private void playMusic() {
 //         mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
 
         enqueueMusicToPlayer();
-        mPlayer.playUri(null, "spotify:track:" + result.getTracks().get(0).getId(), 0, 0);
+
+        mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(0).getId(), 0, 0);
+
+        System.out.println("1曲め: " + currentSetPlaylist.get(0).getName() + "即スキップ");
+
+
+        // ここはダメ。メインスレッドで呼ばないとダメ。
+        Handler mHandler = new Handler(Looper.getMainLooper());
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                renewMusicInfo();
+            }
+        });
+
+
         mPlayer.skipToNext(null);
 
     }
 
 
     private void enqueueMusicToPlayer() {
-        for (Track eachTrack: result.getTracks()) {
+        for (Track eachTrack: currentSetPlaylist) {
             mPlayer.queue(null, eachTrack.getId());
+            System.out.println(eachTrack.getName() + "がenqueueされました");
         }
     }
 
 
     private void renewMusicInfo() {
 
-        Picasso.with(getApplicationContext()).load(R.drawable.fever).into(jacketImageView);
+        Track currentSong = currentSetPlaylist.get(0);
 
-        String info =  "";
+        Picasso.with(getApplicationContext())
+                .load(currentSong.getAlbum().getImages().get(0).getUrl()).into(jacketImageView);
+
+        String info = currentSong.getName() + " - " + currentSong.getArtists().get(0).getName();
 
         nowMusicTextView.setText(info);
 
@@ -717,15 +738,20 @@ public class MainActivity extends AppCompatActivity implements
 
     private void createPlaylists(String seed) {
 
+        System.out.println("とおる");
+
         try {
+
+            //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
 
             // セトリのrecomendation
             URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-                    "seed_artists=4NHQUGzhtTLFvgF5SZesLK&" +
-                    "seed_tracks=0c6xIDDpzE81m2q797ordA&" +
-                    "min_energy=0.4&" +
-                    "min_popularity=50&" +
-                    "market=US&limit=10");
+                    "seed_genres=j-pop" +  // なんかこのジャンル指定がやばいっぽいな
+                    //"seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
+                    //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
+                    //"min_instrumentalness=0.8&" +
+                    //"market=JP&" +
+                    "limit=15");
 
 
             final Request request = new Request.Builder()
@@ -749,22 +775,37 @@ public class MainActivity extends AppCompatActivity implements
                     // ここ、最後は toStringじゃないぞ、まじで気をつけろ
                     String responseBody = response.body().string();
 
-                    result = new Gson().fromJson(responseBody, TrackForPLModel.class);
+                    TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
+
+                    //System.out.println("onresponseしとる");
+                    //System.out.println(responseBody);
 
                     long currentTotalDuration = 0;
 
+                    // 前スプリントでたまっていた曲をリセット(nullだとだめよ。)
+                    // currentSetPlaylist = new ArrayList<Track>();
+
                     // 25分 = 1500000 15分 = 900000
                     for (Track eachTrack: result.getTracks()) {
-                        musicIDArray.add(eachTrack.getId());
+
+                        //musicIDArray.add(eachTrack.getId());
+
+                        currentSetPlaylist.add(eachTrack);
+                        System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
+
                         currentTotalDuration += eachTrack.getDurationMs();
+                        System.out.println("現在の合計時間: " + currentTotalDuration);
+
 
                         if (currentTotalDuration > 1500000) {
                             break;
                         }
                     }
 
-                    if (mAccessToken != null && !musicIDArray.isEmpty()) {
-                        playMusic(musicIDArray.get(0));
+
+                    if (mAccessToken != null && !currentSetPlaylist.isEmpty()) {
+                        System.out.println("きとるね！曲再生いったれ。");
+                        playMusic();
                     }
                 }
 
