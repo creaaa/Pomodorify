@@ -24,12 +24,14 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
+import com.example.masa.bizzarestrangeplayer.Model.Track;
 import com.example.masa.bizzarestrangeplayer.Model.TrackForPLModel;
 import com.example.masa.bizzarestrangeplayer.Model.TrackModel;
 import com.example.masa.bizzarestrangeplayer.R;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
@@ -46,6 +48,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -58,15 +61,20 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
-
     private enum TimerState {
-        Workout, Break, Prepare, none;
+        Workout, Break, Prepare, Suspend, none;
     }
-
 
     SharedPreferences pref;
 
     TimerState state = TimerState.none;
+
+
+    ArrayList<String> musicIDArray = new ArrayList<>();
+
+    // レスポンスjsonからGSON化したプレイリストデータ
+    TrackForPLModel result;
+
 
 
     /* UI */
@@ -114,13 +122,19 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-//        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-//                AuthenticationResponse.Type.TOKEN,
-//                REDIRECT_URI);
-//        builder.setScopes(new String[]{"user-read-private", "streaming"});
-//        AuthenticationRequest request = builder.build();
-//
-//        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
+                AuthenticationResponse.Type.TOKEN,
+                REDIRECT_URI);
+        builder.setScopes(new String[]{"user-read-private", "streaming"});
+        AuthenticationRequest request = builder.build();
+
+        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+
+
+
+
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -156,17 +170,11 @@ public class MainActivity extends AppCompatActivity implements
         jacketImageView.invalidate();
 
 
-
-
         // shared prefから、ポモドーロの間隔をロード
-//        workoutTime = 3000l;
+
         workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
-
-        System.out.println("おらワークアウト！" + workoutTime);
-
         breakTime = Long.valueOf(pref.getString("break_time", "8000"));
-
-        prepareTime = 1000l;
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
 
         final Long MAX_TIMES = Long.valueOf(pref.getString("set", "4"));
 
@@ -186,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                if (isChecked) {
+                if (isChecked) {  // 一時停止中のとき、再開する
 
                     //中止したtimeを取得
                     String   tmp1 = timerTextView.getText().toString();
@@ -205,11 +213,19 @@ public class MainActivity extends AppCompatActivity implements
                     timerStateTextView.setText("WORKOUT");
 
                     countDown.start();
-                } else {
-                    state = TimerState.none;
-                    timerStateTextView.setText("NONE");
 
-                    countDown.cancel();
+                    createPlaylists("");
+
+                    // TODO:
+
+                } else {  // 再生中のとき、一時停止する
+
+                    // TODO: ここの条件式　まじでわかりにくい　応急処置だから　なおせ
+                    if (state != TimerState.none) {
+                        state = TimerState.Suspend;
+                        timerStateTextView.setText("SUSPEND");
+                        countDown.cancel();
+                    }
                 }
             }
         });
@@ -220,14 +236,23 @@ public class MainActivity extends AppCompatActivity implements
             public void onClick(View v) {
                 // 中止
                 countDown.cancel();
-                ti = Long.valueOf(breakTime);
+
+                state = TimerState.none;
+                timerStateTextView.setText("NONE");
+
+                playerToggleButton.setVisibility(View.VISIBLE);
+                playerToggleButton.setChecked(false);  // まさかここで、onCheckedChangeが呼ばれてる？→合ってた
+
+
+
+
+                ti = Long.valueOf(workoutTime);
 
                 long mm = ti / 1000 / 60;
                 long ss = ti / 1000 % 60;
 
                 timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
 
-                playerToggleButton.setChecked(false);
             }
         });
 
@@ -274,91 +299,6 @@ public class MainActivity extends AppCompatActivity implements
 
         for (int i = 0; i < 1; i++) {
             createPlaylists("hoge");
-        }
-    }
-
-
-    public void createPlaylists(String seed) {
-
-        try {
-
-            // セトリのrecomendation
-            URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-                    "seed_artists=4NHQUGzhtTLFvgF5SZesLK&" +
-                    "seed_tracks=0c6xIDDpzE81m2q797ordA&" +
-                    "min_energy=0.4&" +
-                    "min_popularity=50&" +
-                    "market=US&limit=10");
-
-            //URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
-
-
-            final Request request = new Request.Builder()
-                    // URLを生成
-                    .url(url.toString())
-                    .get()
-                    .addHeader("Authorization", "Bearer " + mAccessToken)
-                    .build();
-
-
-            // クライアントオブジェクトを作成する
-            final OkHttpClient client = new OkHttpClient();
-            // 新しいリクエストを行う
-            client.newCall(request).enqueue(new Callback() {
-                // 通信が成功した時
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-
-//                    // 通信結果をログに出力する
-//                    final String responseBody = response.body().string();
-//                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
-//                    Log.d("OKHttp", "result: " + responseBody);
-//                    final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
-//                    System.out.println(result.getArtists().getItems().get(0).getName());
-
-
-                    ///// 動く /////
-
-                    // 通信結果をログに出力する
-                    //final String responseBody = response.body().string();
-//                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
-//                    Log.d("OKHttp", "result: " + responseBody);
-
-                    //final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
-                    //System.out.println(result.getArtists().getItems().get(0).getName());
-
-                    ///// 動く /////
-
-
-                    // ↓動かない
-                    final String responseBody = response.body().string();
-//                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
-                    //Log.d("OKHttp", "" + responseBody);
-
-                    final TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
-
-                    for (int i = 0; i < result.getTracks().size(); i++) {
-                        System.out.println(result.getTracks().get(i).getId());
-                    }
-
-                }
-
-                // 通信が失敗した時
-                @Override
-                public void onFailure(Call call, final IOException e) {
-                    // new Handler().post って書いてたから、
-                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
-                    // で落ちてた？？？
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d("OKHttp", "エラー♪");
-                        }
-                    });
-                }
-            });
-        } catch (Exception e) {
-
         }
     }
 
@@ -679,8 +619,37 @@ public class MainActivity extends AppCompatActivity implements
 
                 case Break:
 
+                    ti = Long.valueOf(prepareTime);
 
-                default:
+                    long m = ti / 1000 / 60;
+                    long s = ti / 1000 % 60;
+                    timerTextView.setText(String.format("%1$02d:%2$02d", m, s));
+
+                    countDown = new CountDown(ti, 1000);
+                    countDown.start();
+
+                    state = TimerState.Prepare;
+                    timerStateTextView.setText("PREPARE");
+
+                    break;
+
+                case Prepare:
+
+                    ti = Long.valueOf(workoutTime);
+
+                    long mmm = ti / 1000 / 60;
+                    long sss = ti / 1000 % 60;
+                    timerTextView.setText(String.format("%1$02d:%2$02d", mmm, sss));
+
+                    countDown = new CountDown(ti, 1000);
+                    countDown.start();
+
+                    state = TimerState.Workout;
+                    timerStateTextView.setText("WORKOUT");
+
+                    playerToggleButton.setChecked(true); // toggleボタンをオンにする
+                    playerToggleButton.setVisibility(View.VISIBLE);
+
                     break;
             };
         }
@@ -703,7 +672,7 @@ public class MainActivity extends AppCompatActivity implements
 
     /* Helper Method */
 
-    public void renewLoginStateTextView() {
+    private void renewLoginStateTextView() {
         if (mAccessToken != null) {
             loginStateTextView.setText("Login: OK");
         } else {
@@ -711,8 +680,112 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void launchSetListActivity() {
+    private void launchSetListActivity() {
         Intent i = new Intent(this, SetListResultActivity.class);
         startActivity(i);
+    }
+
+
+
+    private void playMusic(String musicID) {
+//         mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
+
+        enqueueMusicToPlayer();
+        mPlayer.playUri(null, "spotify:track:" + result.getTracks().get(0).getId(), 0, 0);
+        mPlayer.skipToNext(null);
+
+    }
+
+
+    private void enqueueMusicToPlayer() {
+        for (Track eachTrack: result.getTracks()) {
+            mPlayer.queue(null, eachTrack.getId());
+        }
+    }
+
+
+    private void renewMusicInfo() {
+
+        Picasso.with(getApplicationContext()).load(R.drawable.fever).into(jacketImageView);
+
+        String info =  "";
+
+        nowMusicTextView.setText(info);
+
+    }
+
+
+    private void createPlaylists(String seed) {
+
+        try {
+
+            // セトリのrecomendation
+            URL url = new URL("https://api.spotify.com/v1/recommendations?" +
+                    "seed_artists=4NHQUGzhtTLFvgF5SZesLK&" +
+                    "seed_tracks=0c6xIDDpzE81m2q797ordA&" +
+                    "min_energy=0.4&" +
+                    "min_popularity=50&" +
+                    "market=US&limit=10");
+
+
+            final Request request = new Request.Builder()
+                    // URLを生成
+                    .url(url.toString())
+                    .get()
+                    .addHeader("Authorization", "Bearer " + mAccessToken)
+                    .build();
+
+
+            // クライアントオブジェクトを作成する
+            final OkHttpClient client = new OkHttpClient();
+
+
+            // 新しいリクエストを行う
+            client.newCall(request).enqueue(new Callback() {
+                // 通信が成功した時
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
+                    String responseBody = response.body().string();
+
+                    result = new Gson().fromJson(responseBody, TrackForPLModel.class);
+
+                    long currentTotalDuration = 0;
+
+                    // 25分 = 1500000 15分 = 900000
+                    for (Track eachTrack: result.getTracks()) {
+                        musicIDArray.add(eachTrack.getId());
+                        currentTotalDuration += eachTrack.getDurationMs();
+
+                        if (currentTotalDuration > 1500000) {
+                            break;
+                        }
+                    }
+
+                    if (mAccessToken != null && !musicIDArray.isEmpty()) {
+                        playMusic(musicIDArray.get(0));
+                    }
+                }
+
+
+                // 通信が失敗した時
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    // new Handler().post って書いてたから、
+                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
+                    // で落ちてた？？？
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("OKHttp", "エラー♪");
+                        }
+                    });
+                }
+            });
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 }
