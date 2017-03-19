@@ -14,7 +14,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -65,6 +64,14 @@ public class MainActivity extends AppCompatActivity implements
         Workout, Break, Prepare, Pause, Standby;
     }
 
+
+    String[] musicIDs = {
+            "3JIxjvbbDrA9ztYlNcp3yL",
+            "01iyCAUm8EvOFqVWYJ3dVX",
+            "5ztQHTm1YQqcTkQmgDEU4n",
+    };
+
+
     SharedPreferences pref;
 
     TimerState state = TimerState.Standby;
@@ -92,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     // Time interval(主に内部処理用)
-    private Long ti;
+    // private Long ti;
 
     // set by user(Milli Seconds)
     private Long workoutTime;
@@ -171,19 +178,8 @@ public class MainActivity extends AppCompatActivity implements
 
         MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
 
-
-        // まず、インターバル間隔が決まったら、その後で・・
-//        ti = Long.valueOf(workoutTime);
-//        long mm = ti / 1000 / 60;
-//        long ss = ti / 1000 % 60;
-//        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
-
-
-        renewTimer();
-
-
-
-
+        // ワークアウト時間を最初に画面に表示しておく(実際はスタートしたら、直後にprepareに移行するのだけど)
+        renewTimer(workoutTime);
 
         renewSetInfo();
         renewTimerStateInfo(TimerState.Standby);
@@ -195,44 +191,54 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (isChecked) {  // 一時停止中のとき、再開する
 
-                    //中止したtimeを取得
-                    String   tmp1 = timerTextView.getText().toString();
-                    //timeを分と秒に分ける
-                    String[] tmp2 = tmp1.split(":", 0);
+                    if (state == TimerState.Standby) {
 
-                    int mnt = Integer.parseInt(tmp2[0]) * 1000 * 60;
-                    int scd = Integer.parseInt(tmp2[1]) * 1000;
+                        // この中で曲も再生
+                        //createPlaylists("");
 
-                    if (ti != null) {
-                        System.out.println("残り時間: " + ti);
-                        countDown = new CountDown(ti, 1000);
+                        // まずは、prepareからstateをスタート
+                        state = TimerState.Prepare;
+                        renewTimer(prepareTime);
+                        renewTimerStateInfo(TimerState.Prepare);
+
+                        countDown = new CountDown(prepareTime, 1000);
+                        countDown.start();
+
+                        invalidateOptionsMenu();
+
+                        return;
                     }
 
+
+                    String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+
+                    int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+                    int second = Integer.parseInt(tmp[1]) * 1000;
+
+                    countDown = new CountDown(minute + second, 1000);
+
                     state = TimerState.Workout;
-                    // timerStateTextView.setText("WORKOUT");
                     renewTimerStateInfo(TimerState.Workout);
 
+                    // onCreateOptionsMenu, onPrepareOptionsMenuを再度走らせる
+                    invalidateOptionsMenu();
 
                     countDown.start();
-
-                    //
-                    createPlaylists("");
 
 
                 } else {  // 再生中のとき、一時停止する
 
-                    // TODO: ここの条件式　まじでわかりにくい　応急処置だから　なおせ
-                    if (state != TimerState.Standby) {
-                        state = TimerState.Pause;
-                        // timerStateTextView.setText("PAUSE");
-                        renewTimerStateInfo(TimerState.Pause);
-                        countDown.cancel();
-                    }
+                    if (state == TimerState.Standby) { return; }
+
+                    state = TimerState.Pause;
+                    renewTimerStateInfo(TimerState.Pause);
+                    countDown.cancel();
                 }
             }
         });
 
 
+        // TODO: 最初はcancelButtonは非表示に。でないとnullぽで落ちる
         cancelButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -245,21 +251,12 @@ public class MainActivity extends AppCompatActivity implements
                 playerToggleButton.setVisibility(View.VISIBLE);
                 playerToggleButton.setChecked(false);  // まさかここで、onCheckedChangeが呼ばれてる？→合ってた
 
-                ti = Long.valueOf(workoutTime);
+                renewTimer(workoutTime);
 
-                long mm = ti / 1000 / 60;
-                long ss = ti / 1000 % 60;
+                invalidateOptionsMenu();
 
-                timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
             }
         });
-
-
-        // アクセストークンの有無をラベルに表示→ここ、authがまさか非同期→ダメなのか？
-        //renewLoginStateTextView();
-
-        //connectTrackJsonAndParse();
-        //connectArtistJsonAndParse();
     }
 
 
@@ -271,29 +268,12 @@ public class MainActivity extends AppCompatActivity implements
         if (state == TimerState.Break) {
 
         } else {
-            workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
-
-            ti = Long.valueOf(workoutTime);
-
-            long mm = ti / 1000 / 60;
-            long ss = ti / 1000 % 60;
-            timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+            // workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
+            // renewTimer(workoutTime);
         }
 
     }
 
-    String[] musicIDs = {
-            "3JIxjvbbDrA9ztYlNcp3yL",
-            "01iyCAUm8EvOFqVWYJ3dVX",
-            "5ztQHTm1YQqcTkQmgDEU4n",
-    };
-
-
-    public void times(View v) {
-        for (int i = 0; i < 1; i++) {
-            createPlaylists("hoge");
-        }
-    }
 
 
     public void connectMusicAnalyzeAndParse() {
@@ -349,8 +329,6 @@ public class MainActivity extends AppCompatActivity implements
         }
 
     }
-
-
     public void connectTrackJsonAndParse() {
 
         new AsyncTask<Void, String, Void>() {
@@ -399,7 +377,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         }.execute();
     }
-
     public void connectArtistJsonAndParse() {
 
         try {
@@ -477,7 +454,6 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onError(Throwable throwable) {
                         Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
-
                         renewLoginStateTextView();
                     }
                 });
@@ -489,10 +465,7 @@ public class MainActivity extends AppCompatActivity implements
     // onPlaybackEventの直後に来ます
     @Override
     public void onLoggedIn() {
-
         Log.d("MainActivity", "User logged in");
-        // ギミチョコ!!
-        // mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
     }
 
     @Override
@@ -548,27 +521,32 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+
+        if (state != TimerState.Standby) {
+            return false;
+        }
+
+        getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.pref:
-
-                System.out.println("ほげー");
-
                 Intent i = new Intent(this, MyConfigActivity.class);
                 startActivity(i);
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+
+
+
+    /* Inner Class */
 
     private class CountDown extends CountDownTimer {
 
@@ -583,61 +561,53 @@ public class MainActivity extends AppCompatActivity implements
 
                 case Workout:
 
-                    playerToggleButton.setChecked(false); // toggleボタンをオフにする
-
-                    ti = Long.valueOf(breakTime);
-                    long mm = ti / 1000 / 60;
-                    long ss = ti / 1000 % 60;
-                    timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
-
-                    countDown = new CountDown(ti, 1000);
-                    countDown.start();
-
                     state = TimerState.Break;
-                    // timerStateTextView.setText("BREAK");
+                    countDown = new CountDown(breakTime, 1000);
+                    // これ、なぜかここだとタイマーがスタートしない
+                    // countDown.start();
+
+
+                    //playerToggleButton.setChecked(false); // toggleボタンをオフにする
+                    playerToggleButton.setVisibility(View.GONE);
+                    renewTimer(breakTime);
                     renewTimerStateInfo(TimerState.Break);
 
-                    playerToggleButton.setVisibility(View.GONE);
-
-
                     launchSetListActivity();
+
+                    // から、ここに書かないとだめ。
+                    countDown.start();
 
                     break;
 
                 case Break:
 
-                    ti = Long.valueOf(prepareTime);
-
-                    long m = ti / 1000 / 60;
-                    long s = ti / 1000 % 60;
-                    timerTextView.setText(String.format("%1$02d:%2$02d", m, s));
-
-                    countDown = new CountDown(ti, 1000);
-                    countDown.start();
-
                     state = TimerState.Prepare;
-                    // timerStateTextView.setText("PREPARE");
+                    countDown = new CountDown(prepareTime, 1000);
+                    // これ、なぜかここだとタイマーがスタートしない
+                    //countDown.start();
+
+
+                    renewTimer(prepareTime);
                     renewTimerStateInfo(TimerState.Prepare);
+
+                    countDown.start();
 
                     break;
 
                 case Prepare:
 
-                    ti = Long.valueOf(workoutTime);
-
-                    long mmm = ti / 1000 / 60;
-                    long sss = ti / 1000 % 60;
-                    timerTextView.setText(String.format("%1$02d:%2$02d", mmm, sss));
-
-                    countDown = new CountDown(ti, 1000);
+                    state = TimerState.Workout;
+                    countDown = new CountDown(workoutTime, 1000);
                     countDown.start();
 
-                    state = TimerState.Workout;
-                    // timerStateTextView.setText("WORKOUT");
+
+                    //playerToggleButton.setChecked(true); // toggleボタンをオンにする
+                    playerToggleButton.setVisibility(View.VISIBLE);
+                    renewTimer(workoutTime);
                     renewTimerStateInfo(TimerState.Workout);
 
-                    playerToggleButton.setChecked(true); // toggleボタンをオンにする
-                    playerToggleButton.setVisibility(View.VISIBLE);
+                    // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
+                    createPlaylists("");
 
                     break;
             };
@@ -647,29 +617,17 @@ public class MainActivity extends AppCompatActivity implements
         // Timerのカウント周期で呼ばれる
         @Override
         public void onTick(long millisUntilFinished) {
-            // 残り時間を分、秒、ミリ秒に分割
-            long mm = millisUntilFinished / 1000 / 60;
-            long ss = millisUntilFinished / 1000 % 60;
-            // long ms = millisUntilFinished - ss * 1000 - mm * 1000 * 60;
-
-            //timerText.setText(String.format("%1$02d:%2$02d.%3$03d", mm, ss, ms));
-            timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
-
-            ti = millisUntilFinished;
+            renewTimer(millisUntilFinished);
         }
     }
 
 
     /* Helper Method */
 
-
-
     private void launchSetListActivity() {
         Intent i = new Intent(this, SetListResultActivity.class);
         startActivity(i);
     }
-
-
 
     private void playMusic() {
 //         mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
@@ -690,11 +648,8 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-
         mPlayer.skipToNext(null);
-
     }
-
 
     private void enqueueMusicToPlayer() {
         for (Track eachTrack: currentSetPlaylist) {
@@ -703,62 +658,10 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
-
-    private void renewLoginStateTextView() {
-        if (mAccessToken != null) {
-            loginStateTextView.setText("Login: OK");
-        } else {
-            loginStateTextView.setText("Login: NG");
-        }
-    }
-
-
-    private void renewSetInfo() {
-        // setStateTextView.setText(currentSet + " / " + MAX_TIMES);
-         setStateTextView.setText(String.format("Set: %1$02d / %2$02d", currentSet, MAX_TIMES));
-    }
-
-
-    private void renewTimerStateInfo(TimerState s) {
-        timerStateTextView.setText("State: " + s);
-    }
-
-
-    private void renewMusicInfo() {
-
-        Track currentSong = currentSetPlaylist.get(0);
-
-        Picasso.with(getApplicationContext())
-                .load(currentSong.getAlbum().getImages().get(0).getUrl()).into(jacketImageView);
-
-        String info = currentSong.getName() + " - " + currentSong.getArtists().get(0).getName();
-
-        nowMusicTextView.setText(info);
-    }
-
-
-    private void renewTimer() {
-
-
-        ti = Long.valueOf(workoutTime);
-        long mm = ti / 1000 / 60;
-        long ss = ti / 1000 % 60;
-        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
-    }
-
-
-
-
     private void createPlaylists(String seed) {
 
-        System.out.println("とおる");
-
         try {
-
             //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
-
-            // セトリのrecomendation
             URL url = new URL("https://api.spotify.com/v1/recommendations?" +
                     //"seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
                     "seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
@@ -767,7 +670,6 @@ public class MainActivity extends AppCompatActivity implements
                     //"market=JP&" +
                     "limit=15");
 
-
             final Request request = new Request.Builder()
                     // URLを生成
                     .url(url.toString())
@@ -775,10 +677,8 @@ public class MainActivity extends AppCompatActivity implements
                     .addHeader("Authorization", "Bearer " + mAccessToken)
                     .build();
 
-
             // クライアントオブジェクトを作成する
             final OkHttpClient client = new OkHttpClient();
-
 
             // 新しいリクエストを行う
             client.newCall(request).enqueue(new Callback() {
@@ -791,8 +691,6 @@ public class MainActivity extends AppCompatActivity implements
 
                     TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
 
-                    //System.out.println("onresponseしとる");
-                    //System.out.println(responseBody);
 
                     long currentTotalDuration = 0;
 
@@ -802,23 +700,18 @@ public class MainActivity extends AppCompatActivity implements
                     // 25分 = 1500000 15分 = 900000
                     for (Track eachTrack: result.getTracks()) {
 
-                        //musicIDArray.add(eachTrack.getId());
-
                         currentSetPlaylist.add(eachTrack);
                         System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
 
                         currentTotalDuration += eachTrack.getDurationMs();
                         System.out.println("現在の合計時間: " + currentTotalDuration);
 
-
                         if (currentTotalDuration > 1500000) {
                             break;
                         }
                     }
 
-
                     if (mAccessToken != null && !currentSetPlaylist.isEmpty()) {
-                        System.out.println("きとるね！曲再生いったれ。");
                         playMusic();
                     }
                 }
@@ -841,5 +734,43 @@ public class MainActivity extends AppCompatActivity implements
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+    }
+
+
+    /* renew UI */
+    private void renewLoginStateTextView() {
+        if (mAccessToken != null) {
+            loginStateTextView.setText("Login: OK");
+        } else {
+            loginStateTextView.setText("Login: NG");
+        }
+    }
+
+    private void renewSetInfo() {
+        // setStateTextView.setText(currentSet + " / " + MAX_TIMES);
+         setStateTextView.setText(String.format("Set: %1$02d / %2$02d", currentSet, MAX_TIMES));
+    }
+
+    private void renewTimerStateInfo(TimerState s) {
+        timerStateTextView.setText("State: " + s);
+    }
+
+    private void renewMusicInfo() {
+
+        Track currentSong = currentSetPlaylist.get(0);
+
+        Picasso.with(getApplicationContext())
+                .load(currentSong.getAlbum().getImages().get(0).getUrl()).into(jacketImageView);
+
+        String info = currentSong.getName() + " - " + currentSong.getArtists().get(0).getName();
+
+        nowMusicTextView.setText(info);
+    }
+
+    private void renewTimer(Long kind_of_timer) {
+        Long time_interval = Long.valueOf(kind_of_timer);
+        long m = time_interval / 1000 / 60;
+        long s = time_interval / 1000 % 60;
+        timerTextView.setText(String.format("%1$02d:%2$02d", m, s));
     }
 }

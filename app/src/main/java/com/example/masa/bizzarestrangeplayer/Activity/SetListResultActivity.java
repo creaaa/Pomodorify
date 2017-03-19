@@ -164,8 +164,6 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
-
-
     private class MyAdapter extends BaseAdapter {
 
         private LayoutInflater layoutInflater;
@@ -227,7 +225,6 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
-
     private class CountDown extends CountDownTimer {
 
         public CountDown(long millisInFuture, long countDownInterval) {
@@ -257,8 +254,6 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
-
-
     private class Song {
 
         private String imageURL;
@@ -274,7 +269,6 @@ public class SetListResultActivity extends AppCompatActivity {
         public String getImageURL() {
             return imageURL;
         }
-
         public void setImageURL(String imageURL) {
             this.imageURL = imageURL;
         }
@@ -282,7 +276,6 @@ public class SetListResultActivity extends AppCompatActivity {
         public String getName() {
             return name;
         }
-
         public void setName(String name) {
             this.name = name;
         }
@@ -290,7 +283,6 @@ public class SetListResultActivity extends AppCompatActivity {
         public String getArtist() {
             return artist;
         }
-
         public void setArtist(String artist) {
             this.artist = artist;
         }
