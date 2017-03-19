@@ -45,7 +45,7 @@
         android:layout_below="@+id/loginStateTextView"
         android:layout_marginTop="37dp"
         android:background="@color/colorAccent"
-        android:text="Babymetal - the one -"
+        android:text="DummySong - the dummy -"
         android:textAlignment="center"
         android:textSize="30sp" />
 
@@ -74,11 +74,12 @@
         android:id="@+id/cancelButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:text="Cancel"
         android:layout_alignParentBottom="true"
         android:layout_alignStart="@+id/loginStateTextView"
-        android:layout_marginBottom="73dp" />
+        android:layout_marginBottom="73dp"
+        android:layout_marginStart="28dp"
+        android:text="Reset"
+        android:visibility="invisible" />
 
     <ToggleButton
         android:id="@+id/playerToggleButton"

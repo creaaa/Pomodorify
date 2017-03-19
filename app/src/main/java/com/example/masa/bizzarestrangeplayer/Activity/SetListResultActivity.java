@@ -17,10 +17,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.masa.bizzarestrangeplayer.Model.Track;
 import com.example.masa.bizzarestrangeplayer.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +34,7 @@ public class SetListResultActivity extends AppCompatActivity {
     ListView listView;
     MyAdapter adapter;
 
-    public ArrayList<Song> songs;
+    //public ArrayList<Song> songs;
     public Boolean[] isCheckedArray = new Boolean[]{};
 
     TextView remainingBreakTimeTextView;
@@ -40,6 +43,11 @@ public class SetListResultActivity extends AppCompatActivity {
     private CountDown countDown;
     Long breakTime;
     SharedPreferences pref;
+
+
+    // 前画面から送られてくるプレイリスト
+    ArrayList<Track> currentSetPlaylist = new ArrayList<>();
+
 
 
     @Override
@@ -57,6 +65,13 @@ public class SetListResultActivity extends AppCompatActivity {
         remainingBreakTimeTextView = (TextView) findViewById(R.id.remainingBreakTimeTextView);
 
 
+        currentSetPlaylist = (ArrayList<Track>) getIntent().getSerializableExtra("playlist");
+
+        for (Track eachTrack: currentSetPlaylist) {
+            System.out.println("うけとれ！" + eachTrack.getName());
+        }
+
+
         /* Timer Setting */
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         breakTime = Long.valueOf(pref.getString("break_time", "9000"));
@@ -68,26 +83,32 @@ public class SetListResultActivity extends AppCompatActivity {
         }
 
 
-        songs = new ArrayList<>();
+//          songs = new ArrayList<>();
 
-        songs.add(new Song("ff", "the one", "BABYMETAL"));
-        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
-        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
-        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
-        songs.add(new Song("ff", "メーデー", "パスピエ"));
-        //
-        songs.add(new Song("ff", "the one", "BABYMETAL"));
-        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
-        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
-        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
-        songs.add(new Song("ff", "メーデー", "パスピエ"));
-        songs.add(new Song("ff", "the one", "BABYMETAL"));
-        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
-        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
-        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
-        songs.add(new Song("ff", "メーデー", "パスピエ"));
+//        songs.add(new Song("ff", "the one", "BABYMETAL"));
+//        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
+//        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
+//        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
+//        songs.add(new Song("ff", "メーデー", "パスピエ"));
+//        //
+//        songs.add(new Song("ff", "the one", "BABYMETAL"));
+//        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
+//        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
+//        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
+//        songs.add(new Song("ff", "メーデー", "パスピエ"));
+//        songs.add(new Song("ff", "the one", "BABYMETAL"));
+//        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
+//        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
+//        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
+//        songs.add(new Song("ff", "メーデー", "パスピエ"));
 
-        isCheckedArray = new Boolean[songs.size()];
+
+        //isCheckedArray = new Boolean[songs.size()];
+        isCheckedArray = new Boolean[currentSetPlaylist.size()];
+
+        // TODO: ここが0になってる。ふつう6とかになる
+        System.out.println("サイズ: " + currentSetPlaylist.size());
+
         Arrays.fill(isCheckedArray, false);
 
         listView.setAdapter(adapter);
@@ -119,7 +140,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
                 for (int i = 0; i < isCheckedArray.length; i++) {
                     if (isCheckedArray[i] == true) {
-                        sb.append(songs.get(i).getName() + ",");
+                        sb.append(currentSetPlaylist.get(i).getName() + ",");
                     }
                 }
 
@@ -143,6 +164,8 @@ public class SetListResultActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+
     }
 
 
@@ -171,8 +194,6 @@ public class SetListResultActivity extends AppCompatActivity {
 
         private int resource = 0;
 
-        //        public ArrayList<Song> songs;
-
 
         public MyAdapter(Context context, int resource) {
 
@@ -185,12 +206,12 @@ public class SetListResultActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return songs.size();
+            return currentSetPlaylist.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return songs.get(position);
+            return currentSetPlaylist.get(position);
         }
 
         @Override
@@ -213,11 +234,15 @@ public class SetListResultActivity extends AppCompatActivity {
                 view.setBackgroundColor(getColor(R.color.text_secondary_light));
             }
 
+            Picasso.with(getApplicationContext())
+                    .load(currentSetPlaylist.get(position).getAlbum().getImages().get(0).getUrl())
+                    .into((ImageView) view.findViewById(R.id.jacketImageView));
+
             ((TextView)view.findViewById(R.id.songNameTextView))
-                    .setText(songs.get(position).getName());
+                    .setText(currentSetPlaylist.get(position).getName());
 
             ((TextView)view.findViewById(R.id.artistNameTextView))
-                    .setText(songs.get(position).getArtist());
+                    .setText(currentSetPlaylist.get(position).getArtists().get(0).getName());
 
             return view;
         }

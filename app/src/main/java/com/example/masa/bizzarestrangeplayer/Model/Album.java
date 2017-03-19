@@ -4,13 +4,15 @@ package com.example.masa.bizzarestrangeplayer.Model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Album {
+public class Album implements Serializable {
 
     @SerializedName("album_type")
     @Expose
     private String albumType;
+
     @SerializedName("artists")
     @Expose
     private List<Artist> artists = null;

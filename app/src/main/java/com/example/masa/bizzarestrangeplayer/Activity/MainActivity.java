@@ -1,6 +1,7 @@
 
 package com.example.masa.bizzarestrangeplayer.Activity;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.ColorMatrix;
@@ -22,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.example.masa.bizzarestrangeplayer.Fragment.ResetDialogFragment;
 import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
 import com.example.masa.bizzarestrangeplayer.Model.Track;
 import com.example.masa.bizzarestrangeplayer.Model.TrackForPLModel;
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
     private enum TimerState {
-        Workout, Break, Prepare, Pause, Standby;
+        Standby, Workout, Pause, Break, Prepare
     }
 
 
@@ -97,9 +99,6 @@ public class MainActivity extends AppCompatActivity implements
     private int currentSet = 1; // current set
     private int MAX_TIMES;
 
-
-    // Time interval(主に内部処理用)
-    // private Long ti;
 
     // set by user(Milli Seconds)
     private Long workoutTime;
@@ -176,18 +175,6 @@ public class MainActivity extends AppCompatActivity implements
 
         jacketImageView.invalidate();
 
-
-//        // shared prefから、ポモドーロの間隔をロード
-//        workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
-//        breakTime = Long.valueOf(pref.getString("break_time", "8000"));
-//        prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
-//
-//        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
-
-        // ワークアウト時間を最初に画面に表示しておく(実際はスタートしたら、直後にprepareに移行するのだけど)
-        // renewTimerInfo(workoutTime);
-        // renewSetInfo();
-        // renewTimerStateInfo(TimerState.Standby);
         renewViews(workoutTime);
 
 
@@ -252,36 +239,28 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
 
+                DialogFragment dialog = new ResetDialogFragment();
+                dialog.show(getFragmentManager(), "dialog_basic");
+
                 countDown.cancel();
 
                 state = TimerState.Standby;
-                renewTimerStateInfo(TimerState.Standby);
+                currentSet = 1;
+
+                //renewTimerStateInfo(TimerState.Standby);
 
                 playerToggleButton.setVisibility(View.VISIBLE);
                 playerToggleButton.setChecked(false);  // まさかここで、onCheckedChangeが呼ばれてる？→合ってた
 
-                renewTimerInfo(workoutTime);
-
+                //renewTimerInfo(workoutTime);
                 invalidateOptionsMenu();
+
+                renewViews(workoutTime);
 
             }
         });
     }
 
-
-//    @Override
-//    protected void onResume() {
-//
-//        super.onResume();
-//
-//        if (state == TimerState.Break) {
-//
-//        } else {
-//            // workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
-//            // renewTimerInfo(workoutTime);
-//        }
-//
-//    }
 
 
 
@@ -570,11 +549,21 @@ public class MainActivity extends AppCompatActivity implements
 
                 case Workout:
 
+                    if (currentSet >= MAX_TIMES) {
+
+                        timerTextView.setText("");
+
+                        playerToggleButton.setVisibility(View.INVISIBLE);
+                        launchSetListActivity();
+
+                        return;
+                    }
+
                     state = TimerState.Break;
                     countDown = new CountDown(breakTime, 1000);
                     countDown.start();
 
-                    playerToggleButton.setVisibility(View.GONE);
+                    playerToggleButton.setVisibility(View.INVISIBLE);
                     renewViews(breakTime);
 
                     launchSetListActivity();
@@ -599,6 +588,8 @@ public class MainActivity extends AppCompatActivity implements
                     countDown.start();
 
                     playerToggleButton.setVisibility(View.VISIBLE);
+                    cancelButton.setVisibility(View.VISIBLE);
+
                     renewViews(workoutTime);
 
                     // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
@@ -625,6 +616,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private void launchSetListActivity() {
         Intent i = new Intent(this, SetListResultActivity.class);
+        i.putExtra("playlist", currentSetPlaylist);
+
         startActivity(i);
     }
 
@@ -695,6 +688,14 @@ public class MainActivity extends AppCompatActivity implements
 
                     // 前スプリントでたまっていた曲をリセット(nullだとだめよ。)
                     // currentSetPlaylist = new ArrayList<Track>();
+
+                    if (result.getTracks() == null) {
+                        System.out.println("早期リターン！");
+                        return;
+                    } else {
+                        System.out.println("nullではない。" + result.getTracks());
+                    }
+
 
                     // 25分 = 1500000 15分 = 900000
                     for (Track eachTrack: result.getTracks()) {

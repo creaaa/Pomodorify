@@ -19,10 +19,10 @@ public class TrackForPLModel implements Serializable {
     public List<Track> getTracks() {
         return tracks;
     }
-
     public void setTracks(List<Track> tracks) {
         this.tracks = tracks;
     }
+
 
     @SerializedName("seeds")
     @Expose
@@ -31,7 +31,6 @@ public class TrackForPLModel implements Serializable {
     public List<Seed> getSeeds() {
         return seeds;
     }
-
     public void setSeeds(List<Seed> seeds) {
         this.seeds = seeds;
     }
