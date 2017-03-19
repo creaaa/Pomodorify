@@ -126,20 +126,27 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-        /* Auth Process */
+        /* 1. Auth Process */
+
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
                 REDIRECT_URI);
         builder.setScopes(new String[]{"user-read-private", "streaming"});
         AuthenticationRequest request = builder.build();
-
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+
+        /* 2. prepare Preference and initialize user's interval setting */
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
+        workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
+        breakTime = Long.valueOf(pref.getString("break_time", "8000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
+        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
 
 
-        /* UI componet initialize */
+        /* 3. UI componet initialize */
 
         jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
 
@@ -170,20 +177,22 @@ public class MainActivity extends AppCompatActivity implements
         jacketImageView.invalidate();
 
 
-        // shared prefから、ポモドーロの間隔をロード
-
-        workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
-        breakTime = Long.valueOf(pref.getString("break_time", "8000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
-
-        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+//        // shared prefから、ポモドーロの間隔をロード
+//        workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
+//        breakTime = Long.valueOf(pref.getString("break_time", "8000"));
+//        prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
+//
+//        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
 
         // ワークアウト時間を最初に画面に表示しておく(実際はスタートしたら、直後にprepareに移行するのだけど)
-        renewTimer(workoutTime);
+        // renewTimerInfo(workoutTime);
+        // renewSetInfo();
+        // renewTimerStateInfo(TimerState.Standby);
+        renewViews(workoutTime);
 
-        renewSetInfo();
-        renewTimerStateInfo(TimerState.Standby);
 
+
+        /* 4. set event listener */
 
         playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -198,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements
 
                         // まずは、prepareからstateをスタート
                         state = TimerState.Prepare;
-                        renewTimer(prepareTime);
+                        renewTimerInfo(prepareTime);
                         renewTimerStateInfo(TimerState.Prepare);
 
                         countDown = new CountDown(prepareTime, 1000);
@@ -251,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements
                 playerToggleButton.setVisibility(View.VISIBLE);
                 playerToggleButton.setChecked(false);  // まさかここで、onCheckedChangeが呼ばれてる？→合ってた
 
-                renewTimer(workoutTime);
+                renewTimerInfo(workoutTime);
 
                 invalidateOptionsMenu();
 
@@ -260,19 +269,19 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    @Override
-    protected void onResume() {
-
-        super.onResume();
-
-        if (state == TimerState.Break) {
-
-        } else {
-            // workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
-            // renewTimer(workoutTime);
-        }
-
-    }
+//    @Override
+//    protected void onResume() {
+//
+//        super.onResume();
+//
+//        if (state == TimerState.Break) {
+//
+//        } else {
+//            // workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
+//            // renewTimerInfo(workoutTime);
+//        }
+//
+//    }
 
 
 
@@ -427,6 +436,8 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
+    /* callback method */
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
@@ -460,7 +471,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     }
-
 
     // onPlaybackEventの直後に来ます
     @Override
@@ -545,7 +555,6 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-
     /* Inner Class */
 
     private class CountDown extends CountDownTimer {
@@ -563,19 +572,12 @@ public class MainActivity extends AppCompatActivity implements
 
                     state = TimerState.Break;
                     countDown = new CountDown(breakTime, 1000);
-                    // これ、なぜかここだとタイマーがスタートしない
-                    // countDown.start();
+                    countDown.start();
 
-
-                    //playerToggleButton.setChecked(false); // toggleボタンをオフにする
                     playerToggleButton.setVisibility(View.GONE);
-                    renewTimer(breakTime);
-                    renewTimerStateInfo(TimerState.Break);
+                    renewViews(breakTime);
 
                     launchSetListActivity();
-
-                    // から、ここに書かないとだめ。
-                    countDown.start();
 
                     break;
 
@@ -583,14 +585,10 @@ public class MainActivity extends AppCompatActivity implements
 
                     state = TimerState.Prepare;
                     countDown = new CountDown(prepareTime, 1000);
-                    // これ、なぜかここだとタイマーがスタートしない
-                    //countDown.start();
-
-
-                    renewTimer(prepareTime);
-                    renewTimerStateInfo(TimerState.Prepare);
-
                     countDown.start();
+                    increaseCurrentSet();
+
+                    renewViews(prepareTime);
 
                     break;
 
@@ -600,11 +598,8 @@ public class MainActivity extends AppCompatActivity implements
                     countDown = new CountDown(workoutTime, 1000);
                     countDown.start();
 
-
-                    //playerToggleButton.setChecked(true); // toggleボタンをオンにする
                     playerToggleButton.setVisibility(View.VISIBLE);
-                    renewTimer(workoutTime);
-                    renewTimerStateInfo(TimerState.Workout);
+                    renewViews(workoutTime);
 
                     // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
                     createPlaylists("");
@@ -617,12 +612,16 @@ public class MainActivity extends AppCompatActivity implements
         // Timerのカウント周期で呼ばれる
         @Override
         public void onTick(long millisUntilFinished) {
-            renewTimer(millisUntilFinished);
+            renewTimerInfo(millisUntilFinished);
         }
     }
 
 
     /* Helper Method */
+
+    private void increaseCurrentSet() {
+        currentSet += 1;
+    }
 
     private void launchSetListActivity() {
         Intent i = new Intent(this, SetListResultActivity.class);
@@ -639,7 +638,7 @@ public class MainActivity extends AppCompatActivity implements
         System.out.println("1曲め: " + currentSetPlaylist.get(0).getName() + "即スキップ");
 
 
-        // ここはダメ。メインスレッドで呼ばないとダメ。
+        // ここは、こうやってわざわざメインスレッドで呼ばないとダメ。
         Handler mHandler = new Handler(Looper.getMainLooper());
         mHandler.post(new Runnable() {
             @Override
@@ -738,12 +737,11 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /* renew UI */
-    private void renewLoginStateTextView() {
-        if (mAccessToken != null) {
-            loginStateTextView.setText("Login: OK");
-        } else {
-            loginStateTextView.setText("Login: NG");
-        }
+
+    private void renewViews(Long kind_of_timer) {
+        renewSetInfo();
+        renewTimerStateInfo(state);
+        renewTimerInfo(kind_of_timer);
     }
 
     private void renewSetInfo() {
@@ -755,6 +753,23 @@ public class MainActivity extends AppCompatActivity implements
         timerStateTextView.setText("State: " + s);
     }
 
+    private void renewTimerInfo(Long kind_of_timer) {
+        Long time_interval = Long.valueOf(kind_of_timer);
+        long m = time_interval / 1000 / 60;
+        long s = time_interval / 1000 % 60;
+        timerTextView.setText(String.format("%1$02d:%2$02d", m, s));
+    }
+
+
+    private void renewLoginStateTextView() {
+        if (mAccessToken != null) {
+            loginStateTextView.setText("Login: OK");
+        } else {
+            loginStateTextView.setText("Login: NG");
+        }
+    }
+
+
     private void renewMusicInfo() {
 
         Track currentSong = currentSetPlaylist.get(0);
@@ -765,12 +780,5 @@ public class MainActivity extends AppCompatActivity implements
         String info = currentSong.getName() + " - " + currentSong.getArtists().get(0).getName();
 
         nowMusicTextView.setText(info);
-    }
-
-    private void renewTimer(Long kind_of_timer) {
-        Long time_interval = Long.valueOf(kind_of_timer);
-        long m = time_interval / 1000 / 60;
-        long s = time_interval / 1000 % 60;
-        timerTextView.setText(String.format("%1$02d:%2$02d", m, s));
     }
 }
