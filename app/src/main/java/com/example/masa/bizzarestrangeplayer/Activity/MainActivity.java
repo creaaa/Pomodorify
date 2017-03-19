@@ -21,7 +21,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.masa.bizzarestrangeplayer.Model.ArtistModel;
@@ -63,18 +62,12 @@ public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
     private enum TimerState {
-        Workout, Break, Prepare, Suspend, none;
+        Workout, Break, Prepare, Pause, Standby;
     }
 
     SharedPreferences pref;
 
-    TimerState state = TimerState.none;
-
-
-    ArrayList<String> musicIDArray = new ArrayList<>();
-
-    // レスポンスjsonからGSON化したプレイリストデータ
-    // TrackForPLModel result;
+    TimerState state = TimerState.Standby;
 
     // TrackForPLModelのうち、workout minutesぶんに調整された、実際にかけるプレイリスト
     ArrayList<Track> currentSetPlaylist = new ArrayList<>();
@@ -91,10 +84,11 @@ public class MainActivity extends AppCompatActivity implements
     Button cancelButton;
     ToggleButton playerToggleButton;
 
+
     /* Timer setting class */
     private CountDown countDown;
-
-    int currentSet = 1; // current set
+    private int currentSet = 1; // current set
+    private int MAX_TIMES;
 
 
     // Time interval(主に内部処理用)
@@ -106,15 +100,14 @@ public class MainActivity extends AppCompatActivity implements
     private Long prepareTime;
 
 
-
+    /* Login Info */
     private static final String CLIENT_ID = "8482782774f44e5681ee617adcf6b3f6";
     private static final String REDIRECT_URI = "spotify-player-sample-login://callback";
     private static final int REQUEST_CODE = 1;
+    private String mAccessToken;
 
 
     static public Player mPlayer;
-    private String mAccessToken;
-
 
     private Handler handler = new Handler();
 
@@ -126,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-
+        /* Auth Process */
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
                 REDIRECT_URI);
@@ -135,10 +128,8 @@ public class MainActivity extends AppCompatActivity implements
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
-
-
-
         pref = PreferenceManager.getDefaultSharedPreferences(this);
+
 
 
         /* UI componet initialize */
@@ -155,13 +146,13 @@ public class MainActivity extends AppCompatActivity implements
         playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
 
 
-        float br = -125;
+        float brightness = -125;
 
         ColorMatrix cmx = new ColorMatrix(new float[] {
 
-                  1, 0, 0, 0, br // brightness
-                , 0, 1, 0, 0, br // brightness
-                , 0, 0, 1, 0, br // brightness
+                  1, 0, 0, 0, brightness
+                , 0, 1, 0, 0, brightness
+                , 0, 0, 1, 0, brightness
                 , 0, 0, 0, 1, 0 });
 
         jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
@@ -178,18 +169,24 @@ public class MainActivity extends AppCompatActivity implements
         breakTime = Long.valueOf(pref.getString("break_time", "8000"));
         prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
 
-        final Long MAX_TIMES = Long.valueOf(pref.getString("set", "4"));
+        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
 
 
         // まず、インターバル間隔が決まったら、その後で・・
-        ti = Long.valueOf(workoutTime);
+//        ti = Long.valueOf(workoutTime);
+//        long mm = ti / 1000 / 60;
+//        long ss = ti / 1000 % 60;
+//        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
 
-        // textViewを更新
-        long mm = ti / 1000 / 60;
-        long ss = ti / 1000 % 60;
-        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
 
-        setStateTextView.setText(String.format("Set: %1$02d / %2$02d", currentSet, MAX_TIMES));
+        renewTimer();
+
+
+
+
+
+        renewSetInfo();
+        renewTimerStateInfo(TimerState.Standby);
 
 
         playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -212,20 +209,23 @@ public class MainActivity extends AppCompatActivity implements
                     }
 
                     state = TimerState.Workout;
-                    timerStateTextView.setText("WORKOUT");
+                    // timerStateTextView.setText("WORKOUT");
+                    renewTimerStateInfo(TimerState.Workout);
+
 
                     countDown.start();
 
-                    // TODO:
+                    //
                     createPlaylists("");
 
 
                 } else {  // 再生中のとき、一時停止する
 
                     // TODO: ここの条件式　まじでわかりにくい　応急処置だから　なおせ
-                    if (state != TimerState.none) {
-                        state = TimerState.Suspend;
-                        timerStateTextView.setText("SUSPEND");
+                    if (state != TimerState.Standby) {
+                        state = TimerState.Pause;
+                        // timerStateTextView.setText("PAUSE");
+                        renewTimerStateInfo(TimerState.Pause);
                         countDown.cancel();
                     }
                 }
@@ -236,17 +236,14 @@ public class MainActivity extends AppCompatActivity implements
         cancelButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                // 中止
+
                 countDown.cancel();
 
-                state = TimerState.none;
-                timerStateTextView.setText("NONE");
+                state = TimerState.Standby;
+                renewTimerStateInfo(TimerState.Standby);
 
                 playerToggleButton.setVisibility(View.VISIBLE);
                 playerToggleButton.setChecked(false);  // まさかここで、onCheckedChangeが呼ばれてる？→合ってた
-
-
-
 
                 ti = Long.valueOf(workoutTime);
 
@@ -254,31 +251,26 @@ public class MainActivity extends AppCompatActivity implements
                 long ss = ti / 1000 % 60;
 
                 timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
-
             }
         });
+
 
         // アクセストークンの有無をラベルに表示→ここ、authがまさか非同期→ダメなのか？
         //renewLoginStateTextView();
 
-
         //connectTrackJsonAndParse();
         //connectArtistJsonAndParse();
-
-
     }
 
 
     @Override
     protected void onResume() {
-        super.onResume();
 
+        super.onResume();
 
         if (state == TimerState.Break) {
 
         } else {
-            System.out.println("おらresume!" + pref.getString("workout_time", "ぼけ"));
-
             workoutTime = Long.valueOf(pref.getString("workout_time", "7000"));
 
             ti = Long.valueOf(workoutTime);
@@ -298,7 +290,6 @@ public class MainActivity extends AppCompatActivity implements
 
 
     public void times(View v) {
-
         for (int i = 0; i < 1; i++) {
             createPlaylists("hoge");
         }
@@ -458,6 +449,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
@@ -550,13 +542,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onDestroy();
     }
 
-    // Event listener
-    public void startSprint(View v) {
-        Toast.makeText(this, "hoge", Toast.LENGTH_SHORT).show();
-        //
-        Intent i = new Intent(this, OnSprintActivity.class);
-        startActivity(i);
-    }
 
 
     /* アクションバーに設定画面へのボタン追加 */
@@ -585,7 +570,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-
     private class CountDown extends CountDownTimer {
 
         public CountDown(long millisInFuture, long countDownInterval) {
@@ -610,7 +594,8 @@ public class MainActivity extends AppCompatActivity implements
                     countDown.start();
 
                     state = TimerState.Break;
-                    timerStateTextView.setText("BREAK");
+                    // timerStateTextView.setText("BREAK");
+                    renewTimerStateInfo(TimerState.Break);
 
                     playerToggleButton.setVisibility(View.GONE);
 
@@ -631,7 +616,8 @@ public class MainActivity extends AppCompatActivity implements
                     countDown.start();
 
                     state = TimerState.Prepare;
-                    timerStateTextView.setText("PREPARE");
+                    // timerStateTextView.setText("PREPARE");
+                    renewTimerStateInfo(TimerState.Prepare);
 
                     break;
 
@@ -647,7 +633,8 @@ public class MainActivity extends AppCompatActivity implements
                     countDown.start();
 
                     state = TimerState.Workout;
-                    timerStateTextView.setText("WORKOUT");
+                    // timerStateTextView.setText("WORKOUT");
+                    renewTimerStateInfo(TimerState.Workout);
 
                     playerToggleButton.setChecked(true); // toggleボタンをオンにする
                     playerToggleButton.setVisibility(View.VISIBLE);
@@ -655,6 +642,7 @@ public class MainActivity extends AppCompatActivity implements
                     break;
             };
         }
+
 
         // Timerのカウント周期で呼ばれる
         @Override
@@ -674,13 +662,7 @@ public class MainActivity extends AppCompatActivity implements
 
     /* Helper Method */
 
-    private void renewLoginStateTextView() {
-        if (mAccessToken != null) {
-            loginStateTextView.setText("Login: OK");
-        } else {
-            loginStateTextView.setText("Login: NG");
-        }
-    }
+
 
     private void launchSetListActivity() {
         Intent i = new Intent(this, SetListResultActivity.class);
@@ -722,6 +704,27 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+
+    private void renewLoginStateTextView() {
+        if (mAccessToken != null) {
+            loginStateTextView.setText("Login: OK");
+        } else {
+            loginStateTextView.setText("Login: NG");
+        }
+    }
+
+
+    private void renewSetInfo() {
+        // setStateTextView.setText(currentSet + " / " + MAX_TIMES);
+         setStateTextView.setText(String.format("Set: %1$02d / %2$02d", currentSet, MAX_TIMES));
+    }
+
+
+    private void renewTimerStateInfo(TimerState s) {
+        timerStateTextView.setText("State: " + s);
+    }
+
+
     private void renewMusicInfo() {
 
         Track currentSong = currentSetPlaylist.get(0);
@@ -732,8 +735,19 @@ public class MainActivity extends AppCompatActivity implements
         String info = currentSong.getName() + " - " + currentSong.getArtists().get(0).getName();
 
         nowMusicTextView.setText(info);
-
     }
+
+
+    private void renewTimer() {
+
+
+        ti = Long.valueOf(workoutTime);
+        long mm = ti / 1000 / 60;
+        long ss = ti / 1000 % 60;
+        timerTextView.setText(String.format("%1$02d:%2$02d", mm, ss));
+    }
+
+
 
 
     private void createPlaylists(String seed) {
@@ -746,8 +760,8 @@ public class MainActivity extends AppCompatActivity implements
 
             // セトリのrecomendation
             URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-                    "seed_genres=j-pop" +  // なんかこのジャンル指定がやばいっぽいな
-                    //"seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
+                    //"seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
+                    "seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
                     //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
                     //"min_instrumentalness=0.8&" +
                     //"market=JP&" +
@@ -824,7 +838,6 @@ public class MainActivity extends AppCompatActivity implements
                     });
                 }
             });
-
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
