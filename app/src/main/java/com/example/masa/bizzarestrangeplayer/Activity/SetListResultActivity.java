@@ -29,19 +29,23 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
@@ -94,7 +98,8 @@ public class SetListResultActivity extends AppCompatActivity {
             System.out.println("うけとれ！" + eachTrack.getName());
         }
 
-        getMyselfInfo();
+        // getMyselfInfo();
+        createPlaylistContainer();
 
 
         /* Timer Setting */
@@ -287,109 +292,123 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
     // Step1: プレイリスト(箱そのもの)を生成し、ユーザーアカウントに追加
-    private void createPlaylistContainer() {
-
-        final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("application/json; charset=utf-8");
-
-
-        if (userID == null) {
-            System.out.println("早期リターン発動");
-            return;
-        }
-
-        try {
-            URL url = new URL(
-                    "https://api.spotify.com/v1/users/" +
-                            userID +
-                            "/playlists"
-            );
-
-
-            // new FormEncodingBuilder()
-            // RequestBody.create
-            //MultipartBody.Builder()
-
-            RequestBody body = new FormBody.Builder()
-                    //.add("name", "Coolest Playlist")
-            // addEncodedじゃないとだめなのかも
-            .add("name", "CoolestPlaylist")
-            .build();
-
-
+//    private void createPlaylistContainer() {
 //
-//            RequestBody body777 = new RequestBody() {
+//        final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("application/json; charset=utf-8");
+//
+//
+//        if (userID == null) {
+//            System.out.println("早期リターン発動");
+//            return;
+//        }
+//
+//        try {
+//            URL url = new URL(
+//                    "https://api.spotify.com/v1/users/" +
+//                            // userID +
+//                            "22atummrxxcihawsnsmnqbvya" +
+//                            "/playlists"
+//            );
+//
+//            System.out.println("おら！ " + url);
+//
+//
+//            // new FormEncodingBuilder()
+//            // RequestBody.create
+//            //MultipartBody.Builder()
+//
+//            RequestBody body = new FormBody.Builder()
+//                    //.add("name", "Coolest Playlist")
+//            // addEncodedじゃないとだめなのかも
+//            .addEncoded("name", "CoolestPlaylist")
+//            .build();
+//
+//
+////            RequestBody body = ResponseBody.create(
+////                    MEDIA_TYPE_MARKDOWN,
+////                    "\"name\":\"tuiki\""
+////            );
+////
+//
+//
+//
+//
+////
+////            RequestBody body777 = new RequestBody() {
+////
+////                @Override
+////                public MediaType contentType() {
+////                    return MediaType.parse("application/json");
+////                }
+////
+////                @Override
+////                public void writeTo(BufferedSink sink) throws IOException {
+////                }
+////            };
+//
+//
+//            String body2 = "\"name\":\"tuiki\"";
+//
+//
+//            final Request request = new Request.Builder()
+//                    // URLを生成
+//                    .url(url.toString())
+//                    .post(RequestBody.create(MEDIA_TYPE_MARKDOWN, String.valueOf(body)))
+//                    .addHeader("Accept",        "application/json")
+//                    .addHeader("Authorization", "Bearer " + mAccessToken)
+//                    .addHeader("Content-Type",  "application/json")
+//                    //.post(RequestBody.create(MEDIA_TYPE_MARKDOWN, body2))
+//                    .build();
+//
+//
+//            final OkHttpClient client = new OkHttpClient();
+//
+//            client.newCall(request).enqueue(new Callback() {
 //
 //                @Override
-//                public MediaType contentType() {
-//                    return MediaType.parse("application/json");
+//                public void onFailure(Call call, IOException e) {
+//                    handler.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Log.d("OKHttp", "エラー♪");
+//                        }
+//                    });
 //                }
 //
 //                @Override
-//                public void writeTo(BufferedSink sink) throws IOException {
+//                public void onResponse(Call call, Response response) throws IOException {
+//
+//                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
+//                    String responseBody = response.body().string();
+//
+//                    System.out.println("長かった... " + responseBody);
+//
+////                    try {
+////                        JSONObject obj = new JSONObject(responseBody);
+////                        System.out.println(obj);
+////
+////                        userID = obj.getString("id");
+////
+////                        System.out.println("到達♪ " + userID);
+////
+////                        //STEP 1. ここに書くのはOK??
+////                        createPlaylistContainer();
+////
+////                    } catch (JSONException e) {
+////                        e.printStackTrace();
+////                    }
 //                }
-//            };
-
-
-            String body2 = "\"name\":\"tuiki\"";
-
-
-            final Request request = new Request.Builder()
-                    // URLを生成
-                    .url(url.toString())
-                    //.get()
-                    //.addHeader("Accept",        "application/json")
-                    .post(body)
-                    .header("Authorization", "Bearer " + mAccessToken)
-                    //.addHeader("Accept",        "application/json")
-                    .addHeader("Content-Type",  "application/json")
-                    //.post(RequestBody.create(MEDIA_TYPE_MARKDOWN, body2))
-                    .build();
-
-
-            final OkHttpClient client = new OkHttpClient();
-
-            client.newCall(request).enqueue(new Callback() {
-
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d("OKHttp", "エラー♪");
-                        }
-                    });
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-
-                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
-                    String responseBody = response.body().string();
-
-                    System.out.println("長かった... " + responseBody);
-
-//                    try {
-//                        JSONObject obj = new JSONObject(responseBody);
-//                        System.out.println(obj);
+//            });
 //
-//                        userID = obj.getString("id");
 //
-//                        System.out.println("到達♪ " + userID);
-//
-//                        //STEP 1. ここに書くのはOK??
-//                        createPlaylistContainer();
-//
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-                }
-            });
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
+
+
 
 
 //    private void addPlaylistToPersonalAccount () {
@@ -477,7 +496,64 @@ public class SetListResultActivity extends AppCompatActivity {
 //    }
 
 
+    private void createPlaylistContainer() {
+        try {
+            HttpURLConnection con = null;
 
+            URL url = new URL(
+                    "https://api.spotify.com/v1/users/" +
+                            // userID +
+                            "22atummrxxcihawsnsmnqbvya" +
+                            "/playlists"
+            );
+
+
+
+
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("POST");
+                    con.setDoOutput(true);
+
+//            con.setInstanceFollowRedirects(false);
+//            con.setRequestProperty("Accept-Language", "jp");
+//            con.setDoOutput(true);
+                    con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                    con.setRequestProperty("Authorization", "Bearer " + mAccessToken);
+                    //                    .addHeader("Authorization", "Bearer " + mAccessToken)
+
+                    OutputStream os = con.getOutputStream();//POST用のOutputStreamを取得
+                    String postStr = "name=boke"; //POSTするデータ
+                    PrintStream ps = new PrintStream(os);
+                    ps.print(postStr);//データをPOSTする
+
+                    ps.close();
+
+                    InputStream is = con.getInputStream();//POSTした結果を取得
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    String s;
+                    while ((s = reader.readLine()) != null) {
+                        System.out.println("unk" + s);
+                    }
+                    reader.close();
+
+                    JSONObject in = (JSONObject) con.getContent();
+
+                    System.out.println(in);
+
+                } catch (ProtocolException e) {
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+    }
 
 
 
