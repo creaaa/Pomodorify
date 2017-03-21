@@ -1,0 +1,11 @@
+String[] musicIDs = {
+            "3JIxjvbbDrA9ztYlNcp3yL",
+            "01iyCAUm8EvOFqVWYJ3dVX",
+            "5ztQHTm1YQqcTkQmgDEU4n",
+};
+
+memo
+
+設定でインターバルを再設定してから再度スプリントを開始した時、
+新たな設定値でタイマーが設定されていない。(前のが残ってる)
+

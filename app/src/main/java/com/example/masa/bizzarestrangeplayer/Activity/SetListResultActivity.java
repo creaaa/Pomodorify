@@ -2,6 +2,7 @@
 package com.example.masa.bizzarestrangeplayer.Activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -93,14 +94,26 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
         /* Timer Setting */
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        breakTime = Long.valueOf(pref.getString("break_time", "9000"));
 
-        //if (breakTime != null) {
+        Intent i = getIntent();
+        int currentSet = i.getIntExtra("current_set", 99);
+        int max_set    = i.getIntExtra("max_set", 99);
+
+
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+        // もし最終セットでなければ、タイマーをセット
+        if (currentSet != max_set) {
+
+            breakTime = Long.valueOf(pref.getString("break_time", "9000"));
+
             System.out.println("残り休憩時間: " + breakTime);
             countDown = new CountDown(breakTime, 1000);
             countDown.start();
-        //}
+
+        }
+
 
         isCheckedArray = new Boolean[currentSetPlaylist.size()];
 

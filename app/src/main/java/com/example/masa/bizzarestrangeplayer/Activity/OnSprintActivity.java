@@ -22,7 +22,7 @@ public class OnSprintActivity extends AppCompatActivity {
         imageView.setImageResource(R.drawable.fever);
         //
         // mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
-        MainActivity.mPlayer.playUri(null, "spotify:track:7xAdO0zdl7lGf0ecg4IGhQ", 0, 0);
+        //MainActivity.mPlayer.playUri(null, "spotify:track:7xAdO0zdl7lGf0ecg4IGhQ", 0, 0);
 
 //        try {
 //            Thread.sleep(5000);

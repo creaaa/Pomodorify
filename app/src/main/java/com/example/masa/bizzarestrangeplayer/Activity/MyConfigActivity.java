@@ -18,4 +18,21 @@ public class MyConfigActivity extends AppCompatActivity {
         fragmentTransaction.replace(android.R.id.content, new MyConfigFragment());
         fragmentTransaction.commit();
     }
+
+
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//
+//        System.out.println("おら " + keyCode);
+//
+//        if (keyCode == KeyEvent.KEYCODE_BACK) {
+//            finish();
+//            return true;
+//        }
+//
+//        return false;
+//    }
+
+
+
 }

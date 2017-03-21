@@ -33,11 +33,11 @@
         android:id="@+id/remainingBreakTimeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="next set: 99:59"
-        android:textSize="16sp"
         android:layout_below="@+id/textView3"
+        android:layout_marginStart="19dp"
         android:layout_toEndOf="@+id/ratingBar"
-        android:layout_marginStart="19dp" />
+        android:text="next set: --:--"
+        android:textSize="16sp" />
 
     <ListView
         android:id="@+id/setListListView"
