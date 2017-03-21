@@ -1,7 +1,6 @@
 
 package com.example.masa.bizzarestrangeplayer;
 
-
 import android.os.AsyncTask;
 
 import org.json.JSONException;
@@ -16,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+
 
 public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void> {
 
@@ -79,11 +79,11 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
             os = con.getOutputStream();   //POST用のOutputStreamを取得
             ps = new PrintStream(os);
 
-
 //            {"uris": ["spotify:track:4iV5W9uYEdYUVa79Axb7Rh",
 //                    "spotify:track:1301WleyT98MSxVHPZCA6M"]}
 
-            ps.print("{\"uris\": [\"spotify:track:4iV5W9uYEdYUVa79Axb7Rh\"]}");
+            ps.print("{\"uris\": [\"spotify:track:4iV5W9uYEdYUVa79Axb7Rh\"," +
+                                 "\"spotify:track:1301WleyT98MSxVHPZCA6M\"]}");
             ps.close();
 
 
@@ -108,7 +108,6 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
             String snapshot_id = jsonObject.getString("snapshot_id");
 
             System.out.println("スナップショットID: " + snapshot_id);
-
 
             return null;
 

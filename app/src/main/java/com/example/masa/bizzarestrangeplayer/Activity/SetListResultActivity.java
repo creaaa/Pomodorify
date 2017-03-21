@@ -148,33 +148,12 @@ public class SetListResultActivity extends AppCompatActivity {
 
             public void onClick(View v) {
 
-
                 //STEP 0. ここに書くのはOK??
                 getMyselfInfo();
 
                 //STEP 1. ここに書くのはOK??
-                SystemClock.sleep(7000);
+                SystemClock.sleep(3000);
                 createPlaylistContainer();
-
-                // STEP2. ここに書くのはOK?
-                //SystemClock.sleep(7000);
-                //System.out.println("このやろ！ " + SetListResultActivity.playlistID);
-
-                //putSongsToPlaylist();
-
-
-//                StringBuilder sb = new StringBuilder();
-//
-//                for (int i = 0; i < isCheckedArray.length; i++) {
-//                    if (isCheckedArray[i] == true) {
-//                        sb.append(currentSetPlaylist.get(i).getName() + ",");
-//                    }
-//                }
-//
-//                // 通知
-//                if (sb.toString() != String.valueOf("")) {
-//                    Log.d("SETLIST", sb.substring(0, sb.length() - 1));
-//                }
 
                 finish();
             }
@@ -192,8 +171,6 @@ public class SetListResultActivity extends AppCompatActivity {
                         }
                     }
                 });
-
-
     }
 
 
@@ -269,28 +246,10 @@ public class SetListResultActivity extends AppCompatActivity {
                         System.out.println("到達♪ " + uID);
 
                         userID = uID;
-
-
-
-
-                        //STEP 1. ここに書くのはOK??
-                        //Thread.sleep(3000);
-                        //createPlaylistContainer();
-
-
-                        // STEP2. ここに書くのはOK?
-                        //Thread.sleep(3000);
-                        //putSongsToPlaylist();
-
-
-
                     } catch (JSONException e) {
+
                         e.printStackTrace();
                     }
-
-//                    catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             });
         } catch (MalformedURLException e) {
@@ -299,216 +258,8 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
-    // Step1: プレイリスト(箱そのもの)を生成し、ユーザーアカウントに追加
-//    private void createPlaylistContainer() {
-//
-//        final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("application/json; charset=utf-8");
-//
-//
-//        if (userID == null) {
-//            System.out.println("早期リターン発動");
-//            return;
-//        }
-//
-//        try {
-//            URL url = new URL(
-//                    "https://api.spotify.com/v1/users/" +
-//                            // userID +
-//                            "22atummrxxcihawsnsmnqbvya" +
-//                            "/playlists"
-//            );
-//
-//            System.out.println("おら！ " + url);
-//
-//
-//            // new FormEncodingBuilder()
-//            // RequestBody.create
-//            //MultipartBody.Builder()
-//
-//            RequestBody body = new FormBody.Builder()
-//                    //.add("name", "Coolest Playlist")
-//            // addEncodedじゃないとだめなのかも
-//            .addEncoded("name", "CoolestPlaylist")
-//            .build();
-//
-//
-////            RequestBody body = ResponseBody.create(
-////                    MEDIA_TYPE_MARKDOWN,
-////                    "\"name\":\"tuiki\""
-////            );
-////
-//
-//
-//
-//
-////
-////            RequestBody body777 = new RequestBody() {
-////
-////                @Override
-////                public MediaType contentType() {
-////                    return MediaType.parse("application/json");
-////                }
-////
-////                @Override
-////                public void writeTo(BufferedSink sink) throws IOException {
-////                }
-////            };
-//
-//
-//            String body2 = "\"name\":\"tuiki\"";
-//
-//
-//            final Request request = new Request.Builder()
-//                    // URLを生成
-//                    .url(url.toString())
-//                    .post(RequestBody.create(MEDIA_TYPE_MARKDOWN, String.valueOf(body)))
-//                    .addHeader("Accept",        "application/json")
-//                    .addHeader("Authorization", "Bearer " + mAccessToken)
-//                    .addHeader("Content-Type",  "application/json")
-//                    //.post(RequestBody.create(MEDIA_TYPE_MARKDOWN, body2))
-//                    .build();
-//
-//
-//            final OkHttpClient client = new OkHttpClient();
-//
-//            client.newCall(request).enqueue(new Callback() {
-//
-//                @Override
-//                public void onFailure(Call call, IOException e) {
-//                    handler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            Log.d("OKHttp", "エラー♪");
-//                        }
-//                    });
-//                }
-//
-//                @Override
-//                public void onResponse(Call call, Response response) throws IOException {
-//
-//                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
-//                    String responseBody = response.body().string();
-//
-//                    System.out.println("長かった... " + responseBody);
-//
-////                    try {
-////                        JSONObject obj = new JSONObject(responseBody);
-////                        System.out.println(obj);
-////
-////                        userID = obj.getString("id");
-////
-////                        System.out.println("到達♪ " + userID);
-////
-////                        //STEP 1. ここに書くのはOK??
-////                        createPlaylistContainer();
-////
-////                    } catch (JSONException e) {
-////                        e.printStackTrace();
-////                    }
-//                }
-//            });
-//
-//
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-
-
-
-
-//    private void addPlaylistToPersonalAccount () {
-//
-//        try {
-//            //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
-//            URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-//                    //"seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
-//                    "seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
-//                    //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
-//                    //"min_instrumentalness=0.8&" +
-//                    //"market=JP&" +
-//                    "limit=15");
-//
-//            final Request request = new Request.Builder()
-//                    // URLを生成
-//                    .url(url.toString())
-//                    .get()
-//                    .addHeader("Authorization", "Bearer " + mAccessToken)
-//                    .build();
-//
-//            // クライアントオブジェクトを作成する
-//            final OkHttpClient client = new OkHttpClient();
-//
-//            // 新しいリクエストを行う
-//            client.newCall(request).enqueue(new Callback() {
-//                // 通信が成功した時
-//                @Override
-//                public void onResponse(Call call, Response response) throws IOException {
-//
-//                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
-//                    String responseBody = response.body().string();
-//
-//                    TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
-//
-//
-//                    long currentTotalDuration = 0;
-//
-//                    // 前スプリントでたまっていた曲をリセット(nullだとだめよ。)
-//                    // currentSetPlaylist = new ArrayList<Track>();
-//
-//                    if (result.getTracks() == null) {
-//                        System.out.println("早期リターン！");
-//                        return;
-//                    } else {
-//                        System.out.println("nullではない。" + result.getTracks());
-//                    }
-//
-//
-//                    // 25分 = 1500000 15分 = 900000
-//                    for (Track eachTrack: result.getTracks()) {
-//
-//                        currentSetPlaylist.add(eachTrack);
-//                        System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
-//
-//                        currentTotalDuration += eachTrack.getDurationMs();
-//                        System.out.println("現在の合計時間: " + currentTotalDuration);
-//
-//                        if (currentTotalDuration > 1500000) {
-//                            break;
-//                        }
-//                    }
-//
-//
-//                }
-//
-//
-//                // 通信が失敗した時
-//                @Override
-//                public void onFailure(Call call, final IOException e) {
-//                    // new Handler().post って書いてたから、
-//                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
-//                    // で落ちてた？？？
-//                    handler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            Log.d("OKHttp", "エラー♪");
-//                        }
-//                    });
-//                }
-//            });
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-
-
     // Step 1
     private void createPlaylistContainer() {
-
         // この中野onPost〜で、playlistIDが初期化されます
         new CreatePlaylistAsyncTask(this).execute(mAccessToken, userID);
     }
@@ -527,7 +278,6 @@ public class SetListResultActivity extends AppCompatActivity {
         SetListResultActivity activity;
 
         private int resource = 0;
-
 
         public MyAdapter(Context context, int resource) {
 
@@ -592,10 +342,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
         @Override
         public void onFinish() {
-
             finish();
-
-
         }
 
 
@@ -613,6 +360,7 @@ public class SetListResultActivity extends AppCompatActivity {
             breakTime = millisUntilFinished;
         }
     }
+
 
     private class Song {
 
