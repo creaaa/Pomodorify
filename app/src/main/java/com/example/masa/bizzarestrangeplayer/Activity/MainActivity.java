@@ -127,6 +127,14 @@ public class MainActivity extends AppCompatActivity implements
 
         super.onRestart();
 
+        System.out.println("リスタートｗ");
+
+        // TODO: 設定画面からの復帰でもここが発動してしまう。遷移元に応じて場合分けが必要。
+        // これでいいのか！？
+        if (currentSet == 1) {
+            return;
+        }
+
         // 最後のセットで、SetListResultActivityから復帰してここが通ると、
         // timer stringが空なので、formatができず、落ちる。
         // それを回避
@@ -134,6 +142,10 @@ public class MainActivity extends AppCompatActivity implements
             System.out.println("あぶないとこやで。");
             return;
         }
+
+        // TODO: ホーム画面からの復帰は、ここに何の処理も書かなくていいのか？
+
+
 
         // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
         // とりま動いてるけど...。
@@ -184,8 +196,6 @@ public class MainActivity extends AppCompatActivity implements
                 "streaming"});
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
-
-
 
 
         /* 2. prepare Preference and initialize user's interval setting */
@@ -310,8 +320,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
-
-
 
 
     public void connectMusicAnalyzeAndParse() {
@@ -498,6 +506,12 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 });
             }
+
+
+            if (requestCode == 777) {
+                System.out.println("まじか。くるんか。");
+            }
+
         }
     }
 
@@ -612,12 +626,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.pref:
                 Intent i = new Intent(this, MyConfigActivity.class);
-                startActivity(i);
+
+                // startActivity(i);
+                startActivityForResult(i, 777);
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
