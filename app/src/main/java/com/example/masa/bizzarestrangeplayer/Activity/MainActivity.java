@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -67,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    public static Handler timerRemoteStopHandler;
+
+
     String[] musicIDs = {
             "3JIxjvbbDrA9ztYlNcp3yL",
             "01iyCAUm8EvOFqVWYJ3dVX",
@@ -119,10 +123,52 @@ public class MainActivity extends AppCompatActivity implements
 
 
     @Override
+    protected void onRestart() {
+
+        super.onRestart();
+
+        // 最後のセットで、SetListResultActivityから復帰してここが通ると、
+        // timer stringが空なので、formatができず、落ちる。
+        // それを回避
+        if (currentSet >= MAX_TIMES) {
+            System.out.println("あぶないとこやで。");
+            return;
+        }
+
+        // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
+        // とりま動いてるけど...。
+
+        String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+
+        int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+        int second = Integer.parseInt(tmp[1]) * 1000;
+
+        countDown = new CountDown(minute + second, 1000);
+
+        countDown.start();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        /* 0. prepare timerRemoteStopHandler */
+        timerRemoteStopHandler = new Handler() {
+
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case 100:
+                        // タイマーストップ
+                        System.out.println("タイマーストップ！！！");
+                        countDown.cancel();
+                        break;
+                }
+            }
+        };
 
 
         /* 1. Auth Process */
@@ -195,9 +241,6 @@ public class MainActivity extends AppCompatActivity implements
                 if (isChecked) {  // 一時停止中のとき、再開する
 
                     if (state == TimerState.Standby) {
-
-                        // この中で曲も再生
-                        //createPlaylists("");
 
                         // まずは、prepareからstateをスタート
                         state = TimerState.Prepare;
@@ -486,9 +529,51 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPlaybackEvent(PlayerEvent playerEvent) {
+
         Log.d("MainActivity", "Playback event received: " + playerEvent.name());
+
+
+        // 曲が始まった時:
+        // kSpPlaybackNotifyBecameActive → kSpPlaybackNotifyNext → kSpPlaybackNotifyMetadataChanged →
+        // kSpPlaybackNotifyContextChanged → kSpPlaybackNotifyTrackChanged → kSpPlaybackEventAudioFlush →
+        // kSpPlaybackNotifyPlay
+
+
+        // 曲再生中:
+
+
+        // 曲が終わった時:
+        // kSpPlaybackNotifyTrackDelivered → kSpPlaybackNotifyAudioDeliveryDone → kSpPlaybackNotifyPause →
+        // kSpPlaybackNotifyMetadataChanged → kSpPlaybackNotifyTrackChanged
+
+
+
         switch (playerEvent) {
-            // Handle event type as necessary
+
+            case kSpPlaybackNotifyBecameActive:
+                System.out.println("kSpPlaybackNotifyBecameActive ようわからん");
+                break;
+
+            case kSpPlaybackNotifyTrackChanged:
+                System.out.println("kSpPlaybackNotifyTrackChangedだよ↑");
+                break;
+
+            case kSpPlaybackNotifyNext:
+                System.out.println("kSpPlaybackNotifyNextだっちゃ☆");
+                break;
+
+            case kSpPlaybackNotifyMetadataChanged:
+                System.out.println("kSpPlaybackNotifyMetadataChanged だいぶ謎だわ");
+                break;
+
+            case kSpPlaybackNotifyContextChanged:
+                System.out.println("kSpPlaybackNotifyContextChanged　最大の謎だわ");
+                break;
+
+            case kSpPlaybackNotifyPlay:
+                System.out.println("kSpPlaybackNotifyPlay　ふーん");
+                break;
+
             default:
                 break;
         }
@@ -549,6 +634,9 @@ public class MainActivity extends AppCompatActivity implements
             super(millisInFuture, countDownInterval);
         }
 
+
+        Boolean canGoPrepareMode = false;
+
         @Override
         public void onFinish() {
 
@@ -580,8 +668,10 @@ public class MainActivity extends AppCompatActivity implements
                 case Break:
 
                     state = TimerState.Prepare;
+
                     countDown = new CountDown(prepareTime, 1000);
                     countDown.start();
+
                     increaseCurrentSet();
 
                     renewViews(prepareTime);
@@ -634,7 +724,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void playMusic() {
-//         mPlayer.playUri(null, "spotify:track:6ZSvhLZRJredt15aJiBQqv", 0, 0);
 
         enqueueMusicToPlayer();
 

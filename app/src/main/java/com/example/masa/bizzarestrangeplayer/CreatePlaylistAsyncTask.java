@@ -20,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
@@ -39,7 +41,6 @@ public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
 
         this.mAccessToken = params[0];
         this.userID = params[1];
-
 
         URL url = null;
         HttpURLConnection con = null;
@@ -65,9 +66,16 @@ public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
 
             os = con.getOutputStream();   //POST用のOutputStreamを取得
             ps = new PrintStream(os);
-            ps.print("{\"name\":\"mantin\"}");
-            ps.close();
 
+
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+            String playlistName = sdf.format(date);
+
+            // プレイリスト名をjsonで付与
+            ps.print("{\"name\":\"" + playlistName + "\"}");
+
+            ps.close();
 
             reader = new BufferedReader(new InputStreamReader(
                     con.getInputStream(), "UTF-8"));
@@ -93,22 +101,12 @@ public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
             // プレイリストIDを返す
             return playlistID;
 
-
-//            String result = reader.readLine();
-//            System.out.println("unko " + result);
-//            JSONObject jsonObject =
-//                    new JSONObject(result.substring(result.indexOf("{"), result.lastIndexOf("}")+1));
-//            System.out.println(jsonObject);
-
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
 
-            System.out.println("先にキャッチしたね");
             e.printStackTrace();
-
             InputStream err = con.getErrorStream();
-
             System.out.println(err);
 
         } catch (UnsupportedEncodingException e) {
@@ -117,14 +115,7 @@ public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-//        catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-
-
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         } finally {
             try {
@@ -134,7 +125,6 @@ public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
 
         return null;
@@ -143,13 +133,8 @@ public class CreatePlaylistAsyncTask extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String playlistID) {
-
         System.out.println("きてんの？ " + playlistID);
-
         activity.playlistID = playlistID;
-
         activity.putSongsToPlaylist(mAccessToken, userID, playlistID);
-
-
     }
 }

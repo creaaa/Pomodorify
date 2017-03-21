@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
@@ -51,14 +50,10 @@ public class SetListResultActivity extends AppCompatActivity {
     MyAdapter adapter;
 
 
-    // FIXME: ちゃんとしろ
     private String mAccessToken = null;
     private String userID       = null;
-    public static String playlistID   = null;
+    public  String playlistID   = null;
 
-
-
-    //public ArrayList<Song> songs;
     public Boolean[] isCheckedArray = new Boolean[]{};
 
     TextView remainingBreakTimeTextView;
@@ -67,9 +62,6 @@ public class SetListResultActivity extends AppCompatActivity {
     private CountDown countDown;
     Long breakTime;
     SharedPreferences pref;
-
-    // ログインユーザーのID
-    //String userID;
 
 
     // 前画面から送られてくるプレイリスト
@@ -92,7 +84,6 @@ public class SetListResultActivity extends AppCompatActivity {
 
         remainingBreakTimeTextView = (TextView) findViewById(R.id.remainingBreakTimeTextView);
 
-
         currentSetPlaylist = (ArrayList<Track>) getIntent().getSerializableExtra("playlist");
         mAccessToken = getIntent().getStringExtra("token");
 
@@ -100,32 +91,25 @@ public class SetListResultActivity extends AppCompatActivity {
             System.out.println("うけとれ！" + eachTrack.getName());
         }
 
-        // getMyselfInfo();
-        // TODO: ここだぜ
-        //createPlaylistContainer();
-
 
         /* Timer Setting */
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         breakTime = Long.valueOf(pref.getString("break_time", "9000"));
 
-        if (breakTime != null) {
+        //if (breakTime != null) {
             System.out.println("残り休憩時間: " + breakTime);
             countDown = new CountDown(breakTime, 1000);
             countDown.start();
-        }
-
+        //}
 
         isCheckedArray = new Boolean[currentSetPlaylist.size()];
 
-        // TODO: ここが0になってる。ふつう6とかになる
         System.out.println("サイズ: " + currentSetPlaylist.size());
 
         Arrays.fill(isCheckedArray, false);
 
+
         listView.setAdapter(adapter);
-
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
@@ -143,28 +127,26 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
 
-        ((Button)findViewById(R.id.addPlaylistButton))
-                .setOnClickListener(new View.OnClickListener() {
+        ((Button)findViewById(R.id.addPlaylistButton)).setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
 
                 //STEP 0. ここに書くのはOK??
-                getMyselfInfo();
-
-                //STEP 1. ここに書くのはOK??
-                SystemClock.sleep(3000);
-                createPlaylistContainer();
+                getMyselfInfo(new CreatePlaylistAsyncTask(SetListResultActivity.this));
 
                 finish();
             }
         });
 
 
-        ((Button)findViewById(R.id.selectAllButton))
-                .setOnClickListener(new View.OnClickListener() {
+        ((Button)findViewById(R.id.selectAllButton)).setOnClickListener(new View.OnClickListener() {
                     @RequiresApi(api = Build.VERSION_CODES.M)
                     @Override
                     public void onClick(View v) {
+
+                        countDown.cancel();
+                        MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
+
                         Arrays.fill(isCheckedArray, true);
                         for (int i = 0; i < listView.getChildCount(); i++) {
                             listView.getChildAt(i).setBackgroundColor(getColor(R.color.colorPrimary));
@@ -198,7 +180,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
     // Step 0
-    private void getMyselfInfo() {
+    private void getMyselfInfo(final CreatePlaylistAsyncTask cb) {
 
         try {
 
@@ -217,7 +199,6 @@ public class SetListResultActivity extends AppCompatActivity {
                     .build();
 
             final OkHttpClient client = new OkHttpClient();
-
 
             client.newCall(request).enqueue(new Callback() {
 
@@ -238,6 +219,7 @@ public class SetListResultActivity extends AppCompatActivity {
                     String responseBody = response.body().string();
 
                     try {
+
                         JSONObject obj = new JSONObject(responseBody);
                         System.out.println(obj);
 
@@ -246,8 +228,11 @@ public class SetListResultActivity extends AppCompatActivity {
                         System.out.println("到達♪ " + uID);
 
                         userID = uID;
-                    } catch (JSONException e) {
 
+                        // Step 1 : Create Playlist Container
+                        cb.execute(mAccessToken, userID);
+
+                    } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
@@ -256,6 +241,8 @@ public class SetListResultActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
 
 
     // Step 1
@@ -318,6 +305,7 @@ public class SetListResultActivity extends AppCompatActivity {
                 view.setBackgroundColor(getColor(R.color.text_secondary_light));
             }
 
+            // render each view conponent
             Picasso.with(getApplicationContext())
                     .load(currentSetPlaylist.get(position).getAlbum().getImages().get(0).getUrl())
                     .into((ImageView) view.findViewById(R.id.jacketImageView));
@@ -339,12 +327,10 @@ public class SetListResultActivity extends AppCompatActivity {
             super(millisInFuture, countDownInterval);
         }
 
-
         @Override
         public void onFinish() {
             finish();
         }
-
 
         // Timerのカウント周期で呼ばれる
         @Override
@@ -362,37 +348,37 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
-    private class Song {
-
-        private String imageURL;
-        private String name;
-        private String artist;
-
-        public Song(String imageURL, String name, String artist) {
-            this.imageURL = imageURL;
-            this.name = name;
-            this.artist = artist;
-        }
-
-        public String getImageURL() {
-            return imageURL;
-        }
-        public void setImageURL(String imageURL) {
-            this.imageURL = imageURL;
-        }
-
-        public String getName() {
-            return name;
-        }
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getArtist() {
-            return artist;
-        }
-        public void setArtist(String artist) {
-            this.artist = artist;
-        }
-    }
+//    private class Song {
+//
+//        private String imageURL;
+//        private String name;
+//        private String artist;
+//
+//        public Song(String imageURL, String name, String artist) {
+//            this.imageURL = imageURL;
+//            this.name = name;
+//            this.artist = artist;
+//        }
+//
+//        public String getImageURL() {
+//            return imageURL;
+//        }
+//        public void setImageURL(String imageURL) {
+//            this.imageURL = imageURL;
+//        }
+//
+//        public String getName() {
+//            return name;
+//        }
+//        public void setName(String name) {
+//            this.name = name;
+//        }
+//
+//        public String getArtist() {
+//            return artist;
+//        }
+//        public void setArtist(String artist) {
+//            this.artist = artist;
+//        }
+//    }
 }

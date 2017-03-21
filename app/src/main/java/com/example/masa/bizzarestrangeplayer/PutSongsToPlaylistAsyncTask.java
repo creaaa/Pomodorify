@@ -23,11 +23,9 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
     String userID;
     String playlistID;
 
-
     public PutSongsToPlaylistAsyncTask() {
         super();
     }
-
 
     @Override
     protected Void doInBackground(String... params) {
@@ -37,7 +35,7 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
         this.playlistID = params[2];
 
 
-        // これ意味あんのか自問自答で〜
+        // これ意味あんのか自問自答で〜 → 有効だった。
         if (params[2] == null) {
             System.out.println("早期リターン in Step2");
             return null;
@@ -55,8 +53,6 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
 
         try {
 
-//            https://api.spotify.com/v1/users/{user_id}/playlists/{playlist_id}/tracks
-
             url = new URL("https://api.spotify.com/v1/users/" +
                     userID +
                     "/playlists/" +
@@ -65,7 +61,6 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
             );
 
             System.out.println("URL: " + url);
-
 
             con = (HttpURLConnection) url.openConnection();
 
