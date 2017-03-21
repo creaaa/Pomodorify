@@ -133,20 +133,22 @@ public class MainActivity extends AppCompatActivity implements
         //builder.setScopes(new String[]{"user-read-private", "streaming"});
         builder.setScopes(new String[]{
                 "user-read-private",
-                "playlist-modify-private",
+//                "playlist-modify-private",
                 "playlist-modify-public",
                 "streaming"});
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
 
+
+
         /* 2. prepare Preference and initialize user's interval setting */
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        workoutTime = Long.valueOf(pref.getString("workout_time", "4000"));
-        breakTime = Long.valueOf(pref.getString("break_time", "8000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "12000"));
+        workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
+        breakTime = Long.valueOf(pref.getString("break_time", "10000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
         MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
 
 
@@ -443,13 +445,13 @@ public class MainActivity extends AppCompatActivity implements
                         mPlayer.addConnectionStateCallback(MainActivity.this);
                         mPlayer.addNotificationCallback(MainActivity.this);
 
-                        renewLoginStateTextView();
+                         renewLoginStateTextView();
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
                         Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
-                        renewLoginStateTextView();
+                         renewLoginStateTextView();
                     }
                 });
             }
@@ -620,9 +622,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void launchSetListActivity() {
-        Intent i = new Intent(this, SetListResultActivity.class);
-        i.putExtra("playlist", currentSetPlaylist);
 
+        Intent i = new Intent(this, SetListResultActivity.class);
+
+        i.putExtra("playlist", currentSetPlaylist);
         if (mAccessToken != null) {
             i.putExtra("token", mAccessToken);
         }

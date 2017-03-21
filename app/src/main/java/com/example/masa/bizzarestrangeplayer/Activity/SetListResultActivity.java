@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
@@ -22,22 +23,17 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.masa.bizzarestrangeplayer.CreatePlaylistAsyncTask;
 import com.example.masa.bizzarestrangeplayer.Model.Track;
+import com.example.masa.bizzarestrangeplayer.PutSongsToPlaylistAsyncTask;
 import com.example.masa.bizzarestrangeplayer.R;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +50,14 @@ public class SetListResultActivity extends AppCompatActivity {
     ListView listView;
     MyAdapter adapter;
 
+
+    // FIXME: ちゃんとしろ
+    private String mAccessToken = null;
+    private String userID       = null;
+    public static String playlistID   = null;
+
+
+
     //public ArrayList<Song> songs;
     public Boolean[] isCheckedArray = new Boolean[]{};
 
@@ -65,15 +69,13 @@ public class SetListResultActivity extends AppCompatActivity {
     SharedPreferences pref;
 
     // ログインユーザーのID
-    String userID;
+    //String userID;
 
 
     // 前画面から送られてくるプレイリスト
     ArrayList<Track> currentSetPlaylist = new ArrayList<>();
 
     private Handler handler = new Handler();
-
-
 
 
     @Override
@@ -99,7 +101,8 @@ public class SetListResultActivity extends AppCompatActivity {
         }
 
         // getMyselfInfo();
-        createPlaylistContainer();
+        // TODO: ここだぜ
+        //createPlaylistContainer();
 
 
         /* Timer Setting */
@@ -113,27 +116,6 @@ public class SetListResultActivity extends AppCompatActivity {
         }
 
 
-//          songs = new ArrayList<>();
-
-//        songs.add(new Song("ff", "the one", "BABYMETAL"));
-//        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
-//        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
-//        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
-//        songs.add(new Song("ff", "メーデー", "パスピエ"));
-//        //
-//        songs.add(new Song("ff", "the one", "BABYMETAL"));
-//        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
-//        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
-//        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
-//        songs.add(new Song("ff", "メーデー", "パスピエ"));
-//        songs.add(new Song("ff", "the one", "BABYMETAL"));
-//        songs.add(new Song("ff", "グッとくるSUMMER", "大森靖子"));
-//        songs.add(new Song("ff", "Sugar!!", "フジファブリック"));
-//        songs.add(new Song("ff", "ぜんぜん", "寺嶋由芙"));
-//        songs.add(new Song("ff", "メーデー", "パスピエ"));
-
-
-        //isCheckedArray = new Boolean[songs.size()];
         isCheckedArray = new Boolean[currentSetPlaylist.size()];
 
         // TODO: ここが0になってる。ふつう6とかになる
@@ -166,18 +148,34 @@ public class SetListResultActivity extends AppCompatActivity {
 
             public void onClick(View v) {
 
-                StringBuilder sb = new StringBuilder();
 
-                for (int i = 0; i < isCheckedArray.length; i++) {
-                    if (isCheckedArray[i] == true) {
-                        sb.append(currentSetPlaylist.get(i).getName() + ",");
-                    }
-                }
+                //STEP 0. ここに書くのはOK??
+                getMyselfInfo();
 
-                // 通知
-                if (sb.toString() != String.valueOf("")) {
-                    Log.d("SETLIST", sb.substring(0, sb.length() - 1));
-                }
+                //STEP 1. ここに書くのはOK??
+                SystemClock.sleep(7000);
+                createPlaylistContainer();
+
+                // STEP2. ここに書くのはOK?
+                //SystemClock.sleep(7000);
+                //System.out.println("このやろ！ " + SetListResultActivity.playlistID);
+
+                //putSongsToPlaylist();
+
+
+//                StringBuilder sb = new StringBuilder();
+//
+//                for (int i = 0; i < isCheckedArray.length; i++) {
+//                    if (isCheckedArray[i] == true) {
+//                        sb.append(currentSetPlaylist.get(i).getName() + ",");
+//                    }
+//                }
+//
+//                // 通知
+//                if (sb.toString() != String.valueOf("")) {
+//                    Log.d("SETLIST", sb.substring(0, sb.length() - 1));
+//                }
+
                 finish();
             }
         });
@@ -217,14 +215,10 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
-
     // Step 0: 自身のアカウントのIDをゲット
     // Step 1: /v1/users/{user_id}/playlists  プレイリスト(箱そのもの)を生成
     // Step 2: /v1/users/{user_id}/playlists/{playlist_id}/tracks その中に曲を次々ぶち込んでいく
 
-
-    // FIXME: ちゃんとしろ
-    String mAccessToken = null;
 
     // Step 0
     private void getMyselfInfo() {
@@ -246,6 +240,7 @@ public class SetListResultActivity extends AppCompatActivity {
                     .build();
 
             final OkHttpClient client = new OkHttpClient();
+
 
             client.newCall(request).enqueue(new Callback() {
 
@@ -269,20 +264,33 @@ public class SetListResultActivity extends AppCompatActivity {
                         JSONObject obj = new JSONObject(responseBody);
                         System.out.println(obj);
 
-                        userID = obj.getString("id");
+                        String uID = obj.getString("id");
 
-                        System.out.println("到達♪ " + userID);
+                        System.out.println("到達♪ " + uID);
 
-                        Thread.sleep(2000);
+                        userID = uID;
+
+
+
 
                         //STEP 1. ここに書くのはOK??
-                        createPlaylistContainer();
+                        //Thread.sleep(3000);
+                        //createPlaylistContainer();
+
+
+                        // STEP2. ここに書くのはOK?
+                        //Thread.sleep(3000);
+                        //putSongsToPlaylist();
+
+
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
+
+//                    catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             });
         } catch (MalformedURLException e) {
@@ -496,66 +504,20 @@ public class SetListResultActivity extends AppCompatActivity {
 //    }
 
 
+
+
+    // Step 1
     private void createPlaylistContainer() {
-        try {
-            HttpURLConnection con = null;
 
-            URL url = new URL(
-                    "https://api.spotify.com/v1/users/" +
-                            // userID +
-                            "22atummrxxcihawsnsmnqbvya" +
-                            "/playlists"
-            );
-
-
-
-
-
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-
-                    con = (HttpURLConnection) url.openConnection();
-                    con.setRequestMethod("POST");
-                    con.setDoOutput(true);
-
-//            con.setInstanceFollowRedirects(false);
-//            con.setRequestProperty("Accept-Language", "jp");
-//            con.setDoOutput(true);
-                    con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                    con.setRequestProperty("Authorization", "Bearer " + mAccessToken);
-                    //                    .addHeader("Authorization", "Bearer " + mAccessToken)
-
-                    OutputStream os = con.getOutputStream();//POST用のOutputStreamを取得
-                    String postStr = "name=boke"; //POSTするデータ
-                    PrintStream ps = new PrintStream(os);
-                    ps.print(postStr);//データをPOSTする
-
-                    ps.close();
-
-                    InputStream is = con.getInputStream();//POSTした結果を取得
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                    String s;
-                    while ((s = reader.readLine()) != null) {
-                        System.out.println("unk" + s);
-                    }
-                    reader.close();
-
-                    JSONObject in = (JSONObject) con.getContent();
-
-                    System.out.println(in);
-
-                } catch (ProtocolException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        // この中野onPost〜で、playlistIDが初期化されます
+        new CreatePlaylistAsyncTask(this).execute(mAccessToken, userID);
     }
 
 
+    // Step 2
+    public void putSongsToPlaylist(String mAccessToken, String userID, String playlistID) {
+        new PutSongsToPlaylistAsyncTask().execute(mAccessToken, userID, playlistID);
+    }
 
 
 
@@ -618,7 +580,6 @@ public class SetListResultActivity extends AppCompatActivity {
 
             return view;
         }
-
     }
 
 
@@ -631,7 +592,10 @@ public class SetListResultActivity extends AppCompatActivity {
 
         @Override
         public void onFinish() {
+
             finish();
+
+
         }
 
 
@@ -683,5 +647,4 @@ public class SetListResultActivity extends AppCompatActivity {
             this.artist = artist;
         }
     }
-
 }
