@@ -207,17 +207,7 @@ public class MainActivity extends AppCompatActivity implements
 
         /* 1. Auth Process */
 
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-                AuthenticationResponse.Type.TOKEN,
-                REDIRECT_URI);
-        //builder.setScopes(new String[]{"user-read-private", "streaming"});
-        builder.setScopes(new String[]{
-                "user-read-private",
-                "playlist-modify-private",
-                "playlist-modify-public",
-                "streaming"});
-        AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+        doAuth();
 
 
         /* 2. prepare Preference and initialize user's interval setting */
@@ -786,6 +776,11 @@ public class MainActivity extends AppCompatActivity implements
 
                 return true;
 
+            case R.id.login:
+
+                doAuth();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -902,6 +897,23 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /* Helper Method */
+
+    private void doAuth() {
+
+        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
+                AuthenticationResponse.Type.TOKEN,
+                REDIRECT_URI);
+        //builder.setScopes(new String[]{"user-read-private", "streaming"});
+        builder.setScopes(new String[]{
+                "user-read-private",
+                "playlist-modify-private",
+                "playlist-modify-public",
+                "streaming"});
+        AuthenticationRequest request = builder.build();
+        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+
+    }
 
     private void increaseCurrentSet() { currentSet += 1; }
 

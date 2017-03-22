@@ -4,4 +4,9 @@
         android:id="@+id/pref"
         android:icon="@android:drawable/btn_default"
         android:title="pref" />
+
+    <item
+        android:id="@+id/login"
+        android:icon="@android:drawable/btn_default"
+        android:title="login" />
 </menu>
