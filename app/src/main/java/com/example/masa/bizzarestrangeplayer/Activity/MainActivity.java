@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements
     Button cancelButton;
     ToggleButton playerToggleButton;
     Button nextSongButton;
+    Button musicPauseButton;
 
 
     /* Timer setting class */
@@ -216,6 +217,8 @@ public class MainActivity extends AppCompatActivity implements
         cancelButton       = (Button) findViewById(R.id.cancelButton);
         playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
         nextSongButton     = (Button) findViewById(R.id.nextSongButton);
+        musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
+
 
 
         float brightness = -125;
@@ -294,11 +297,12 @@ public class MainActivity extends AppCompatActivity implements
                     }
 
 
-
                     // ここ、実は必要。
-                    // なぜならキャンセルボタンを押したとき、トグルボタン=OFFになり、ここが走る。
+                    // 1. なぜならキャンセルボタンを押したとき 2. state = Workout時にonStopしたとき
+                    // トグルボタン=OFFになり、ここが走る。
                     // だから早期リターンさせてる。必要。
-                    if (state == TimerState.Standby) { return; }
+                    // まぁこの場合、2は書かなくていいかもしれないかもだけど...
+                    if (state == TimerState.Standby || state == TimerState.Pause) { return; }
 
                     state = TimerState.Pause;
                     countDown.cancel();
@@ -337,13 +341,24 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
 
-                mPlayer.skipToNext(null);
+                // 俺はこれを実質使ってない(てゆうかわからない)
+                // mPlayer.skipToNext(null);
                 playlistHead += 1;
 
+                // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
                 mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
                 renewMusicInfo();
             }
         });
+
+
+        musicPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPlayer.pause(null);
+            }
+        });
+
     }
 
 
@@ -517,6 +532,7 @@ public class MainActivity extends AppCompatActivity implements
                 mAccessToken = response.getAccessToken();
 
                 Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
+
                 Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                     @Override
                     public void onInitialized(SpotifyPlayer spotifyPlayer) {
@@ -636,10 +652,59 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+
+    @Override
+    protected void onStop() {
+
+        if (countDown != null) {
+            System.out.println("やった♪消滅");
+            countDown.cancel();
+        }
+
+        switch (state) {
+
+            case Workout:
+
+                state = TimerState.Pause;
+                playerToggleButton.setChecked(false);
+
+                renewTimerStateInfo(TimerState.Pause);
+
+                break;
+        }
+
+
+
+        super.onStop();
+    }
+
+
     @Override
     protected void onDestroy() {
+
+
+        System.out.println("きとるな");
+
         // VERY IMPORTANT! This must always be called or else you will leak resources
         Spotify.destroyPlayer(this);
+
+        //FIXME: これ書かないとどうなるか？
+        // たぶん、タイマーは生きたままになって回り続けてる。、
+        // そのため、一見、アプリ立ち上げてなくてもonFinishが勝手に起動してしまう。
+        // し、ビューに反映されてないから、おかしく感じる。
+
+
+
+        // ここやりすぎか、なぜなら再起動した時に、タイマーも消えてしまうから
+//        if (countDown != null) {
+//            System.out.println("やった♪消滅");
+//            countDown.cancel();
+//        }
+
+        // とりあえず、stopで判断を留保しよう
+        // てかこれそもそもondestroyにかいちゃだめや、これ
+        //countDown.cancel();
+
         super.onDestroy();
     }
 
@@ -710,10 +775,8 @@ public class MainActivity extends AppCompatActivity implements
                         countDown.cancel();
 
 
-                        // TODO 2週目以降の判定がおかしい
                         // ここだと、putExtraで1が渡るからおかしいっぽいな？
                         //currentSet = 1;
-
 
 
                         timerTextView.setText("");
@@ -773,7 +836,7 @@ public class MainActivity extends AppCompatActivity implements
                     renewViews(workoutTime);
 
                     // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
-                    createPlaylists("");
+                    createThisSetPlaylist();
 
                     // ここ、非同期だからだめよ
                    // mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
@@ -793,9 +856,8 @@ public class MainActivity extends AppCompatActivity implements
 
     /* Helper Method */
 
-    private void increaseCurrentSet() {
-        currentSet += 1;
-    }
+    private void increaseCurrentSet() { currentSet += 1; }
+
 
     private void launchSetListActivity() {
 
@@ -811,46 +873,23 @@ public class MainActivity extends AppCompatActivity implements
         startActivity(i);
     }
 
-    private void playMusic() {
-
-        enqueueMusicToPlayer();
-
-        System.out.println("1曲め: " + currentSetPlaylist.get(0).getName() + "即スキップ");
 
 
-        // ここは、こうやってわざわざメインスレッドで呼ばないとダメ。
-        Handler mHandler = new Handler(Looper.getMainLooper());
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                renewMusicInfo();
-            }
-        });
+    private void createThisSetPlaylist() {
 
-        mPlayer.skipToNext(null);
-
-        mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
-
-    }
-
-    private void enqueueMusicToPlayer() {
-        for (Track eachTrack: currentSetPlaylist) {
-            mPlayer.queue(null, eachTrack.getId());
-            System.out.println(eachTrack.getName() + "がenqueueされました");
-        }
-    }
-
-    private void createPlaylists(String seed) {
+        // TODO: 自分のアカウント（日本アカウント）じゃきけない曲まで選出されてるっぽい。
+        // だから、そのとき、なにもきこえてこないんじゃないの。
 
         try {
             //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
             URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-                    //"seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
-                    "seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
+                    "seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
+                    //"seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
                     //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
                     //"min_instrumentalness=0.8&" +
                     //"market=JP&" +
                     "limit=15");
+
 
             final Request request = new Request.Builder()
                     // URLを生成
@@ -859,8 +898,10 @@ public class MainActivity extends AppCompatActivity implements
                     .addHeader("Authorization", "Bearer " + mAccessToken)
                     .build();
 
+
             // クライアントオブジェクトを作成する
             final OkHttpClient client = new OkHttpClient();
+
 
             // 新しいリクエストを行う
             client.newCall(request).enqueue(new Callback() {
@@ -873,33 +914,32 @@ public class MainActivity extends AppCompatActivity implements
 
                     TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
 
-
-                    long currentTotalDuration = 0;
-
-                    // 前スプリントでたまっていた曲をリセット(nullだとだめよ。)
-                    // currentSetPlaylist = new ArrayList<Track>();
-
                     if (result.getTracks() == null) {
                         System.out.println("早期リターン！");
                         return;
-                    } else {
-                        System.out.println("nullではない。" + result.getTracks());
                     }
 
+                    // 前の設定を空に
+                    currentSetPlaylist = new ArrayList<>();
 
-                    // 25分 = 1500000 15分 = 900000
+
+                    long currentTotalDuration = 0;
+
+                    // 25分 = 1500000milli 15分 = 900000milli
                     for (Track eachTrack: result.getTracks()) {
 
                         currentSetPlaylist.add(eachTrack);
-                        System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
-
                         currentTotalDuration += eachTrack.getDurationMs();
+
+                        System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
                         System.out.println("現在の合計時間: " + currentTotalDuration);
 
+                        // workoutTime / 1500000
                         if (currentTotalDuration > 1500000) {
                             break;
                         }
                     }
+
 
                     if (mAccessToken != null && !currentSetPlaylist.isEmpty()) {
                         playMusic();
@@ -920,11 +960,41 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
                 }
+
             });
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
     }
+
+
+    private void playMusic() {
+
+        //enqueueMusicToPlayer();
+
+        // ここは、こうやってわざわざメインスレッドで呼ばないとダメ。
+        Handler mHandler = new Handler(Looper.getMainLooper());
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                renewMusicInfo();
+            }
+        });
+
+        //mPlayer.skipToNext(null);
+        // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
+        mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+
+    }
+
+
+//    private void enqueueMusicToPlayer() {
+//        for (Track eachTrack: currentSetPlaylist) {
+//            mPlayer.queue(null, eachTrack.getId());
+//            System.out.println(eachTrack.getName() + "がenqueueされました");
+//        }
+//    }
+
 
 
     /* renew UI */

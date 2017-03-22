@@ -97,9 +97,19 @@
         android:id="@+id/nextSongButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="next song"
+        android:layout_alignBaseline="@+id/musicPauseButton"
+        android:layout_alignBottom="@+id/musicPauseButton"
+        android:layout_alignStart="@+id/cancelButton" />
+
+    <Button
+        android:id="@+id/musicPauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_alignStart="@+id/playerToggleButton"
         android:layout_marginBottom="12dp"
-        android:text="next song" />
+        android:layout_marginStart="12dp"
+        android:text="song pause" />
     />
 </RelativeLayout>
