@@ -276,9 +276,12 @@ public class SetListResultActivity extends AppCompatActivity {
 //    }
 
 
+
+    public ArrayList<String> intendedAddedSongIDs;
+
     // Step 2
-    public void putSongsToPlaylist(String mAccessToken, String userID, String playlistID, String[] songIDs) {
-        new PutSongsToPlaylistAsyncTask().execute(mAccessToken, userID, playlistID);
+    public void putSongsToPlaylist(String mAccessToken, String userID, String playlistID) {
+        new PutSongsToPlaylistAsyncTask(this).execute(mAccessToken, userID, playlistID);
     }
 
 

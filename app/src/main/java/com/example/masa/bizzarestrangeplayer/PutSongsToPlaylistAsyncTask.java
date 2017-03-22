@@ -3,6 +3,8 @@ package com.example.masa.bizzarestrangeplayer;
 
 import android.os.AsyncTask;
 
+import com.example.masa.bizzarestrangeplayer.Activity.SetListResultActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,17 +17,25 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void> {
+
+
+    SetListResultActivity activity;
+
 
     String mAccessToken;
     String userID;
     String playlistID;
 
-    public PutSongsToPlaylistAsyncTask() {
+
+    public PutSongsToPlaylistAsyncTask(SetListResultActivity activity) {
         super();
+        this.activity = activity;
     }
+
 
     @Override
     protected Void doInBackground(String... params) {
@@ -77,8 +87,37 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
 //            {"uris": ["spotify:track:4iV5W9uYEdYUVa79Axb7Rh",
 //                    "spotify:track:1301WleyT98MSxVHPZCA6M"]}
 
-            ps.print("{\"uris\": [\"spotify:track:4iV5W9uYEdYUVa79Axb7Rh\"," +
-                                 "\"spotify:track:1301WleyT98MSxVHPZCA6M\"]}");
+
+            // ArrayList<String> songIDs = activity.intendedAddedSongIDs;
+
+            ArrayList<String> songIDs = new ArrayList<String>();
+
+            songIDs.add("1301WleyT98MSxVHPZCA6M");
+            songIDs.add("4iV5W9uYEdYUVa79Axb7Rh");
+
+            StringBuilder sb = new StringBuilder();
+
+
+            sb.append("{\"uris\": [");
+
+            for (String id: songIDs) {
+                sb.append("\"spotify:track:" + id + "\",");
+            }
+
+            // 最後の文字　"," をトリム
+            sb.deleteCharAt(sb.toString().length()-1);
+
+            sb.append("]}");
+
+            ps.print(sb.toString());
+
+            System.out.println("きつい: " + sb.toString());
+
+
+            //ps.print("{\"uris\": [\"spotify:track:4iV5W9uYEdYUVa79Axb7Rh\"," +
+            //                     "\"spotify:track:1301WleyT98MSxVHPZCA6M\"" +
+            //        "]}");
+
             ps.close();
 
 
