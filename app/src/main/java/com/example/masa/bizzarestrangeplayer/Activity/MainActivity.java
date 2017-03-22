@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -124,6 +125,31 @@ public class MainActivity extends AppCompatActivity implements
 
         System.out.println("リスタートｗ");
 
+
+        // ミッションコントロールから復帰の場合、タイマーを再点火
+        if (countDown != null) {
+
+            System.out.println("うん");
+
+            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+            if (timerTextView.getText().toString().equals("")) {
+                return;
+            }
+
+            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+
+            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+            int second = Integer.parseInt(tmp[1]) * 1000;
+            countDown = new CountDown(minute + second, 1000);
+            countDown.start();
+
+            return;
+
+        } else {
+            System.out.println("ええ？？ないの！？");
+        }
+
+
         // TODO: 設定画面からの復帰でもここが発動してしまう。遷移元に応じて場合分けが必要。
         // これでいいのか！？
         if (currentSet == 1) {
@@ -138,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
 
-        // TODO: ホーム画面からの復帰は、ここに何の処理も書かなくていいのか？
+
 
 
 
@@ -212,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements
         setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
         timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
         nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
+        nowMusicTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
         timerTextView      = (TextView) findViewById(R.id.timerTextView);
 
         cancelButton       = (Button) findViewById(R.id.cancelButton);
@@ -653,6 +680,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+
+
+
     @Override
     protected void onStop() {
 
@@ -662,6 +692,8 @@ public class MainActivity extends AppCompatActivity implements
         }
 
 
+        System.out.println("ここでくんのかよ...");
+
         // タイマーの種類に応じて退避行動の挙動を変化
         switch (state) {
 
@@ -670,29 +702,24 @@ public class MainActivity extends AppCompatActivity implements
 
             case Workout:
 
-                state = TimerState.Pause;
-                playerToggleButton.setChecked(false);
+                //これだと、startActivityしたときも発動してしまう。他の手を考えないと。。。
 
-                renewTimerStateInfo(TimerState.Pause);
+                // state = TimerState.Pause;
+                // playerToggleButton.setChecked(false);
+
+                // renewTimerStateInfo(TimerState.Pause);
 
                 break;
 
             case Pause:
-
                 break;
 
             case Break:
-
-                
-
                 break;
 
             case Prepare:
                 break;
-
         }
-
-
 
         super.onStop();
     }
@@ -829,6 +856,7 @@ public class MainActivity extends AppCompatActivity implements
                     launchSetListActivity();
 
                     break;
+
 
                 case Break:
 
