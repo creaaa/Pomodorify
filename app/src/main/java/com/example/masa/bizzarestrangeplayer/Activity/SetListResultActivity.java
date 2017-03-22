@@ -4,7 +4,7 @@ package com.example.masa.bizzarestrangeplayer.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -43,6 +43,8 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import static android.os.Build.VERSION_CODES.M;
 
 
 public class SetListResultActivity extends AppCompatActivity {
@@ -126,7 +128,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
+            @RequiresApi(api = M)
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -161,7 +163,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
         ((Button)findViewById(R.id.selectAllButton)).setOnClickListener(new View.OnClickListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.M)
+                    @RequiresApi(api = M)
                     @Override
                     public void onClick(View v) {
 
@@ -289,10 +291,13 @@ public class SetListResultActivity extends AppCompatActivity {
 
     private class MyAdapter extends BaseAdapter {
 
+
         private LayoutInflater layoutInflater;
         SetListResultActivity activity;
 
+
         private int resource = 0;
+
 
         public MyAdapter(Context context, int resource) {
 
@@ -343,6 +348,78 @@ public class SetListResultActivity extends AppCompatActivity {
 
             ((TextView)view.findViewById(R.id.artistNameTextView))
                     .setText(currentSetPlaylist.get(position).getArtists().get(0).getName());
+
+
+            (view.findViewById(R.id.previewButton)).setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+
+                    countDown.cancel();
+                    MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
+                    MainActivity.mPlayer.pause(null);
+
+
+                    System.out.println("プレビューURI: " + currentSetPlaylist.get(position).getPreviewUrl());
+
+
+                    try {
+                        String url = currentSetPlaylist.get(position).getPreviewUrl();
+                        MediaPlayer mp = new MediaPlayer();
+                        mp.setDataSource(url);
+                        mp.prepare();
+                        mp.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
+//                    final Request request = new Request.Builder()
+//                    // URLを生成
+//                    .url(url.toString())
+//                    //.addHeader("Authorization","Bearer " + mAccessToken)
+//                    .build();
+//
+//
+//                    // クライアントオブジェクトを作成する
+//                    final OkHttpClient client = new OkHttpClient();
+//                    // 新しいリクエストを行う
+//                    final URL finalUrl = url;
+//                    client.newCall(request).enqueue(new Callback() {
+//                // 通信が成功した時
+//                @Override
+//                public void onResponse(Call call, Response response) throws IOException {
+//
+//                    // 通信結果をログに出力する
+//                    final String responseBody = response.body().string();
+//                    //
+//                    Log.d("OKHttp", responseBody);
+//
+//
+////                    MediaPlayer mp = new MediaPlayer();
+////                    mp.setDataSource(String.valueOf(finalUrl));
+////                    mp.prepare();
+////                    mp.start();
+//
+//                }
+//
+//                // 通信が失敗した時
+//                @Override
+//                public void onFailure(Call call, final IOException e) {
+//                    // new Handler().post って書いてたから、
+//                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
+//                    // で落ちてた？？？
+//                    handler.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Log.d("OKHttp", "エラー♪");
+//                        }
+//                    });
+//                }
+//            });
+        }});
+
+
 
             return view;
         }

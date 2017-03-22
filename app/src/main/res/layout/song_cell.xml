@@ -34,7 +34,7 @@
         android:layout_alignStart="@+id/songNameTextView" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/previewButton"
         android:layout_width="75px"
         android:layout_height="75px"
         android:background="@android:drawable/ic_media_play"

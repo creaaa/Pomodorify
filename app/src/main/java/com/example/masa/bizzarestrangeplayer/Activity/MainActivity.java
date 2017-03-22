@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /* Music Player */
-    private Player mPlayer;
+    public static Player mPlayer;
     private int playlistHead = 0;
 
 
