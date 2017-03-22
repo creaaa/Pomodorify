@@ -33,12 +33,15 @@
         android:layout_alignBottom="@+id/jacketImageView"
         android:layout_alignStart="@+id/songNameTextView" />
 
-    <CheckBox
-        android:id="@+id/cb"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <Button
+        android:id="@+id/button"
+        android:layout_width="75px"
+        android:layout_height="75px"
+        android:background="@android:drawable/ic_media_play"
+        android:backgroundTint="@color/primary_text"
         android:layout_above="@+id/artistNameTextView"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="30dp" />
+        android:layout_marginEnd="27dp" />
+
 
 </RelativeLayout>

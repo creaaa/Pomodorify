@@ -770,7 +770,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 Intent i = new Intent(this, MyConfigActivity.class);
 
-                // 戻るボタンを押すとfinish()が内部的に呼ばれているため、
+                // 戻るボタンを押すとfinish()が内部的に呼ばれてgit remote -vいるため、
                 // onActivityResultで処理を加えられる
                 startActivityForResult(i, 777);
 

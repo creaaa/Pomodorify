@@ -55,6 +55,7 @@ public class SetListResultActivity extends AppCompatActivity {
     private String userID       = null;
     public  String playlistID   = null;
 
+
     public Boolean[] isCheckedArray = new Boolean[]{};
 
     TextView remainingBreakTimeTextView;
@@ -87,6 +88,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
         currentSetPlaylist = (ArrayList<Track>) getIntent().getSerializableExtra("playlist");
         mAccessToken = getIntent().getStringExtra("token");
+
 
         for (Track eachTrack: currentSetPlaylist) {
             System.out.println("うけとれ！" + eachTrack.getName());
@@ -135,6 +137,12 @@ public class SetListResultActivity extends AppCompatActivity {
                     isCheckedArray[position] = false;
                     view.setBackgroundColor(getColor(R.color.text_secondary_light));
                 }
+
+
+                // タイマーを停止。と同時に、前画面のタイマーも停止
+                countDown.cancel();
+                MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
+
             }
         });
 
@@ -187,9 +195,12 @@ public class SetListResultActivity extends AppCompatActivity {
     }
 
 
+    /* プレイリスト作成 + 曲の追加は以下3ステップで実施される */
+
     // Step 0: 自身のアカウントのIDをゲット
-    // Step 1: /v1/users/{user_id}/playlists  プレイリスト(箱そのもの)を生成
+    // Step 1: /v1/users/{user_id}/playlists  プレイリスト(箱そのもの)を生成(Step0のコールバックとして渡している)
     // Step 2: /v1/users/{user_id}/playlists/{playlist_id}/tracks その中に曲を次々ぶち込んでいく
+    // (step1の onPostの中で実施している)
 
 
     // Step 0
@@ -259,16 +270,17 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
     // Step 1
-    private void createPlaylistContainer() {
-        // この中野onPost〜で、playlistIDが初期化されます
-        new CreatePlaylistAsyncTask(this).execute(mAccessToken, userID);
-    }
+//    private void createPlaylistContainer() {
+//        // この中のonPost〜で、playlistIDが初期化されます
+//        new CreatePlaylistAsyncTask(this).execute(mAccessToken, userID);
+//    }
 
 
     // Step 2
-    public void putSongsToPlaylist(String mAccessToken, String userID, String playlistID) {
+    public void putSongsToPlaylist(String mAccessToken, String userID, String playlistID, String[] songIDs) {
         new PutSongsToPlaylistAsyncTask().execute(mAccessToken, userID, playlistID);
     }
+
 
 
 
