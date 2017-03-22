@@ -4,6 +4,7 @@ package com.example.masa.bizzarestrangeplayer;
 import android.os.AsyncTask;
 
 import com.example.masa.bizzarestrangeplayer.Activity.SetListResultActivity;
+import com.example.masa.bizzarestrangeplayer.Model.Track;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,6 +41,7 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
     @Override
     protected Void doInBackground(String... params) {
 
+
         this.mAccessToken = params[0];
         this.userID = params[1];
         this.playlistID = params[2];
@@ -50,6 +52,7 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
             System.out.println("早期リターン in Step2");
             return null;
         }
+
 
         System.out.println("step2まできた");
 
@@ -88,12 +91,23 @@ public class PutSongsToPlaylistAsyncTask extends AsyncTask<String, String, Void>
 //                    "spotify:track:1301WleyT98MSxVHPZCA6M"]}
 
 
-            // ArrayList<String> songIDs = activity.intendedAddedSongIDs;
+            ArrayList<Track> currentSetPlaylist = activity.currentSetPlaylist;
 
-            ArrayList<String> songIDs = new ArrayList<String>();
+            ArrayList<String> songIDs = new ArrayList<>();
 
-            songIDs.add("1301WleyT98MSxVHPZCA6M");
-            songIDs.add("4iV5W9uYEdYUVa79Axb7Rh");
+//            for (Track id: currentSetPlaylist) {
+//                songIDs.add(id.getId());
+//            }
+
+
+            for (int i = 0; i < currentSetPlaylist.size(); i++) {
+                if (activity.isCheckedArray[i]) {
+                    songIDs.add(currentSetPlaylist.get(i).getId());
+                }
+            }
+
+            //songIDs.add("1301WleyT98MSxVHPZCA6M");
+            //songIDs.add("4iV5W9uYEdYUVa79Axb7Rh");
 
             StringBuilder sb = new StringBuilder();
 

@@ -67,7 +67,7 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
     // 前画面から送られてくるプレイリスト
-    ArrayList<Track> currentSetPlaylist = new ArrayList<>();
+    public ArrayList<Track> currentSetPlaylist = new ArrayList<>();
 
     private Handler handler = new Handler();
 
