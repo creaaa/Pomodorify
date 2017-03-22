@@ -661,7 +661,12 @@ public class MainActivity extends AppCompatActivity implements
             countDown.cancel();
         }
 
+
+        // タイマーの種類に応じて退避行動の挙動を変化
         switch (state) {
+
+            case Standby:
+                break;
 
             case Workout:
 
@@ -671,6 +676,20 @@ public class MainActivity extends AppCompatActivity implements
                 renewTimerStateInfo(TimerState.Pause);
 
                 break;
+
+            case Pause:
+
+                break;
+
+            case Break:
+
+                
+
+                break;
+
+            case Prepare:
+                break;
+
         }
 
 
