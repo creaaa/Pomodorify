@@ -113,8 +113,12 @@ public class MainActivity extends AppCompatActivity implements
     /* Login Info */
     private static final String CLIENT_ID = "8482782774f44e5681ee617adcf6b3f6";
     private static final String REDIRECT_URI = "spotify-player-sample-login://callback";
-    private static final int REQUEST_CODE = 1;
+    private static final int REQUEST_CODE = 0;
     private String mAccessToken;
+
+    /* Launch Activity */
+    private final int LAUNCH_SETLIST_RESULT = 1;
+    private final int LAUNCH_PREF = 2;
 
 
 
@@ -126,39 +130,23 @@ public class MainActivity extends AppCompatActivity implements
         System.out.println("リスタートｗ");
 
 
-        // ミッションコントロールから復帰の場合、タイマーを再点火
-        if (countDown != null) {
-
-            System.out.println("うん");
-
-            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-            if (timerTextView.getText().toString().equals("")) {
-                return;
-            }
-
-            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
-
-            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-            int second = Integer.parseInt(tmp[1]) * 1000;
-            countDown = new CountDown(minute + second, 1000);
-            countDown.start();
-
-            return;
-
-        }
-
-
-        // 最後のセットで、SetListResultActivityから復帰してここが通ると、
-        // timer stringが空なので、formatができず、落ちる。
-        // それを回避
+        // TODO: ここが機能してない
         if (currentSet >= MAX_TIMES) {
+
             System.out.println("あぶないとこやで。");
+
+            currentSet = 1;
+            renewSetInfo();
+
             return;
         }
 
 
         // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
         // とりま動いてるけど...。
+
+
+        // mission controlからの復帰時、タイマーを再開
 
         String[] tmp = (timerTextView.getText().toString()).split(":", 0);
 
@@ -320,7 +308,10 @@ public class MainActivity extends AppCompatActivity implements
                     if (state == TimerState.Standby || state == TimerState.Pause) { return; }
 
                     state = TimerState.Pause;
-                    countDown.cancel();
+
+                    if(countDown != null) {
+                        countDown.cancel();
+                    }
 
                     renewTimerStateInfo(TimerState.Pause);
                 }
@@ -335,7 +326,9 @@ public class MainActivity extends AppCompatActivity implements
                 DialogFragment dialog = new ResetDialogFragment();
                 dialog.show(getFragmentManager(), "dialog_basic");
 
-                countDown.cancel();
+                if(countDown != null) {
+                    countDown.cancel();
+                }
 
                 state = TimerState.Standby;
                 currentSet = 1;
@@ -566,9 +559,25 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
+        else if (requestCode == LAUNCH_SETLIST_RESULT) {
+
+            System.out.println("セトリ画面からの復帰");
+
+            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+            if (timerTextView.getText().toString().equals("")) {
+                return;
+            }
+
+            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+
+            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+            int second = Integer.parseInt(tmp[1]) * 1000;
+            countDown = new CountDown(minute + second, 1000);
+            countDown.start();
+        }
 
         // 設定フラグメント画面から復帰時の処理
-        if (requestCode == 777) {
+        else if (requestCode == LAUNCH_PREF) {
 
             System.out.println("設定画面からの復帰");
 
@@ -756,7 +765,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 // 戻るボタンを押すとfinish()が内部的に呼ばれてgit remote -vいるため、
                 // onActivityResultで処理を加えられる
-                startActivityForResult(i, 777);
+                startActivityForResult(i, LAUNCH_SETLIST_RESULT);
 
                 return true;
 
@@ -797,7 +806,10 @@ public class MainActivity extends AppCompatActivity implements
 
                         state = TimerState.Standby;
                         System.out.println("状態: " + state);
-                        countDown.cancel();
+
+                        if(countDown != null) {
+                            countDown.cancel();
+                        }
 
 
                         // ここだと、putExtraで1が渡るからおかしいっぽいな？
@@ -818,8 +830,8 @@ public class MainActivity extends AppCompatActivity implements
                         launchSetListActivity();
 
                         // よって、launchSetListActivity してから、currentSetをリセットすればよろし。
-                        currentSet = 1;
-                        renewSetInfo();
+                        //currentSet = 1;
+                        //renewSetInfo();
 
 
 
@@ -915,8 +927,10 @@ public class MainActivity extends AppCompatActivity implements
         i.putExtra("current_set", currentSet);
         i.putExtra("max_set", MAX_TIMES);
 
-        startActivity(i);
+        startActivityForResult(i, LAUNCH_SETLIST_RESULT);
     }
+
+
 
 
 

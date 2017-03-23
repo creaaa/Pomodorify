@@ -169,7 +169,11 @@ public class SetListResultActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        countDown.cancel();
+                        if (countDown != null) {
+                            countDown.cancel();
+                        }
+
+
                         MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
 
                         Arrays.fill(isCheckedArray, true);
@@ -357,7 +361,10 @@ public class SetListResultActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    countDown.cancel();
+                    if (countDown != null) {
+                        countDown.cancel();
+                    }
+
                     MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
                     MainActivity.mPlayer.pause(null);
 
