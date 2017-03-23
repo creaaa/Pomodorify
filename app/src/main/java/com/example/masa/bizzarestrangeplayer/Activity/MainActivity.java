@@ -139,9 +139,10 @@ public class MainActivity extends AppCompatActivity implements
         System.out.println("リスタートｗ");
 
 
-        // TODO: ここが怪しい！！！
-        if (currentSet >= MAX_TIMES) {
-
+        // TODO: ここが怪しい！！！やっぱそうだった！！！！！！
+        // FIXME: その場しのぎの修正！！！！ロジック考えてなんとかしろ
+//        if (currentSet >= MAX_TIMES) {
+        if (currentSet > MAX_TIMES) {
             System.out.println("あぶないとこやで。");
 
             currentSet = 1;
@@ -175,8 +176,8 @@ public class MainActivity extends AppCompatActivity implements
 
 
         // mission controlからの復帰時、タイマーを再開
-
-        kusoTimerReset();
+    // TODO: ここじょうぜつ！！！！！！！！！やばい！！
+        //kusoTimerReset();
 
     }
     
@@ -947,7 +948,7 @@ public class MainActivity extends AppCompatActivity implements
                     countDown.start();
 
                     // TODO: ここも超絶怪しい
-                    //increaseCurrentSet();
+                    increaseCurrentSet();
 
                     renewViews(prepareTime);
 
