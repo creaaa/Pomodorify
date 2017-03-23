@@ -3,6 +3,8 @@
     <string name="com_spotify_sdk_redirect_scheme">spotify-player-sample-login</string>
     <string name="com_spotify_sdk_redirect_host">callback</string>
     <string name="title_activity_on_sprint">OnSprintActivity</string>
+    <string name="tab1">Timer</string>
+    <string name="tab2">Music</string>
 
     <string-array name="picker_nums">
         <item>5 Min</item>

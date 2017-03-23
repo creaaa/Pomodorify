@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -166,6 +167,39 @@ public class MainActivity extends AppCompatActivity implements
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        /* 00. Tabhost Initialize */
+
+
+        // Tabhostを有効化
+        TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
+        tabHost.setup();
+
+
+        // タブ:Tab1を作成＆追加
+        TabHost.TabSpec tab1 = tabHost.newTabSpec("tab1");
+        tab1.setIndicator(getResources().getString(R.string.tab1));  // indicator = ラベル(ツマミ)
+        tab1.setContent(R.id.tab1);
+
+        tabHost.addTab(tab1);
+
+
+        // タブ:Tab2を作成＆追加
+        TabHost.TabSpec tab2 = tabHost.newTabSpec("tab2");
+        tab2.setIndicator(getResources().getString(R.string.tab2));
+        tab2.setContent(R.id.tab2);
+
+        tabHost.addTab(tab2);
+
+        tabHost.setCurrentTab(0);
+
+
+
+
+
+
+
 
 
         /* 0. prepare timerRemoteStopHandler */
