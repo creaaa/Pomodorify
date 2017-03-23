@@ -26,27 +26,38 @@
         android:layout_height="380px"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/nowMusicTextView"
-        android:layout_above="@+id/nextSongButton" />
+        android:layout_above="@+id/previousSongButton" />
 
 
     <Button
-    android:id="@+id/nextSongButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="21dp"
-        android:text="next song"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="44dp" />
-
-    <Button
-    android:id="@+id/musicPauseButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-        android:text="song pause"
-        android:layout_marginEnd="38dp"
+        android:id="@+id/previousSongButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/nextSongButton"
         android:layout_alignBottom="@+id/nextSongButton"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="23dp"
+        android:background="@android:drawable/ic_media_previous"
+        android:backgroundTint="@color/background_black" />
+
+    <Button
+        android:id="@+id/nextSongButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="21dp"
+        android:layout_marginEnd="26dp"
+        android:background="@android:drawable/ic_media_next"
+        android:backgroundTint="@color/background_black" />
+
+    <Button
+        android:id="@+id/musicPauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/ic_media_pause"
+        android:backgroundTint="@color/background_black"
+        android:layout_below="@+id/jacketImageView"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -28,10 +28,11 @@
         android:id="@+id/artistNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="dummy artist"
+        android:textSize="16sp"
         android:layout_alignBottom="@+id/jacketImageView"
         android:layout_alignStart="@+id/songNameTextView"
-        android:text="dummy artist"
-        android:textSize="16sp" />
+        android:layout_marginBottom="17dp" />
 
     <Button
         android:id="@+id/previewButton"

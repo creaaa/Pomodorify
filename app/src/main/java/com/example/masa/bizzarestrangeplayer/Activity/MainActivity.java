@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements
 
     /* UI Tab2 */
 
+    Button previousSongButton;
     Button nextSongButton;
     Button musicPauseButton;
 
@@ -138,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements
         System.out.println("リスタートｗ");
 
 
-        // TODO: ここが機能してない
+        // TODO: ここが怪しい！！！
         if (currentSet >= MAX_TIMES) {
 
             System.out.println("あぶないとこやで。");
@@ -281,6 +282,9 @@ public class MainActivity extends AppCompatActivity implements
 
         cancelButton       = (Button) findViewById(R.id.cancelButton);
         playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
+
+
+        previousSongButton = (Button) findViewById(R.id.previousSongButton);
         nextSongButton     = (Button) findViewById(R.id.nextSongButton);
         musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
 
@@ -390,6 +394,19 @@ public class MainActivity extends AppCompatActivity implements
         });
 
 
+
+        previousSongButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (playlistHead != 0) {
+                    playlistHead -= 1;
+                }
+
+                mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                renewMusicInfo();
+            }
+        });
 
         nextSongButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -883,14 +900,10 @@ public class MainActivity extends AppCompatActivity implements
                         state = TimerState.Standby;
                         System.out.println("状態: " + state);
 
-//                        if(countDown != null) {
-                            Log.d(TAG, "はいとおったー5");
-                            countDown.cancel();
-//                        }
-
-
-                        // ここだと、putExtraで1が渡るからおかしいっぽいな？
-                        //currentSet = 1;
+//                      if(countDown != null) {
+                        Log.d(TAG, "はいとおったー5");
+                        countDown.cancel();
+//                      }
 
 
                         timerTextView.setText("");
@@ -902,13 +915,8 @@ public class MainActivity extends AppCompatActivity implements
                         cancelButton.setVisibility(View.INVISIBLE);
 
                         renewTimerStateInfo(state);
-//                        renewSetInfo();
 
                         launchSetListActivity();
-
-                        // よって、launchSetListActivity してから、currentSetをリセットすればよろし。
-                        //currentSet = 1;
-                        //renewSetInfo();
 
                         return;
                     }
@@ -938,7 +946,8 @@ public class MainActivity extends AppCompatActivity implements
 
                     countDown.start();
 
-                    increaseCurrentSet();
+                    // TODO: ここも超絶怪しい
+                    //increaseCurrentSet();
 
                     renewViews(prepareTime);
 
@@ -961,9 +970,6 @@ public class MainActivity extends AppCompatActivity implements
 
                     // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
                     createThisSetPlaylist();
-
-                    // ここ、非同期だからだめよ
-                   // mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
 
                     break;
             };
@@ -1139,7 +1145,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void renewSetInfo() {
-        // setStateTextView.setText(currentSet + " / " + MAX_TIMES);
          setStateTextView.setText(String.format("Set: %1$02d / %2$02d", currentSet, MAX_TIMES));
     }
 

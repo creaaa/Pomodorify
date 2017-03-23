@@ -24,8 +24,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.masa.bizzarestrangeplayer.Async.CreatePlaylistAsyncTask;
-import com.example.masa.bizzarestrangeplayer.Model.Track;
 import com.example.masa.bizzarestrangeplayer.Async.PutSongsToPlaylistAsyncTask;
+import com.example.masa.bizzarestrangeplayer.Model.Track;
 import com.example.masa.bizzarestrangeplayer.R;
 import com.squareup.picasso.Picasso;
 
@@ -50,7 +50,7 @@ import static android.os.Build.VERSION_CODES.M;
 public class SetListResultActivity extends AppCompatActivity {
 
 
-    ListView listView;
+    ListView  listView;
     MyAdapter adapter;
 
 
@@ -196,13 +196,17 @@ public class SetListResultActivity extends AppCompatActivity {
         super.onStop();
     }
 
+
+    // これ書かないと、戻るボタンが効かなくなる
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch(item.getItemId()) {
             case android.R.id.home:
                 finish();
                 return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -289,14 +293,10 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
 
-    public ArrayList<String> intendedAddedSongIDs;
-
     // Step 2
     public void putSongsToPlaylist(String mAccessToken, String userID, String playlistID) {
         new PutSongsToPlaylistAsyncTask(this).execute(mAccessToken, userID, playlistID);
     }
-
-
 
 
     private class MyAdapter extends BaseAdapter {
@@ -305,9 +305,7 @@ public class SetListResultActivity extends AppCompatActivity {
         private LayoutInflater layoutInflater;
         SetListResultActivity activity;
 
-
         private int resource = 0;
-
 
         public MyAdapter(Context context, int resource) {
 
@@ -385,51 +383,6 @@ public class SetListResultActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
-
-//                    final Request request = new Request.Builder()
-//                    // URLを生成
-//                    .url(url.toString())
-//                    //.addHeader("Authorization","Bearer " + mAccessToken)
-//                    .build();
-//
-//
-//                    // クライアントオブジェクトを作成する
-//                    final OkHttpClient client = new OkHttpClient();
-//                    // 新しいリクエストを行う
-//                    final URL finalUrl = url;
-//                    client.newCall(request).enqueue(new Callback() {
-//                // 通信が成功した時
-//                @Override
-//                public void onResponse(Call call, Response response) throws IOException {
-//
-//                    // 通信結果をログに出力する
-//                    final String responseBody = response.body().string();
-//                    //
-//                    Log.d("OKHttp", responseBody);
-//
-//
-////                    MediaPlayer mp = new MediaPlayer();
-////                    mp.setDataSource(String.valueOf(finalUrl));
-////                    mp.prepare();
-////                    mp.start();
-//
-//                }
-//
-//                // 通信が失敗した時
-//                @Override
-//                public void onFailure(Call call, final IOException e) {
-//                    // new Handler().post って書いてたから、
-//                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
-//                    // で落ちてた？？？
-//                    handler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            Log.d("OKHttp", "エラー♪");
-//                        }
-//                    });
-//                }
-//            });
         }});
 
             return view;
@@ -438,7 +391,6 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
     private class CountDown extends CountDownTimer {
-
 
         public CountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -466,38 +418,4 @@ public class SetListResultActivity extends AppCompatActivity {
         }
     }
 
-
-//    private class Song {
-//
-//        private String imageURL;
-//        private String name;
-//        private String artist;
-//
-//        public Song(String imageURL, String name, String artist) {
-//            this.imageURL = imageURL;
-//            this.name = name;
-//            this.artist = artist;
-//        }
-//
-//        public String getImageURL() {
-//            return imageURL;
-//        }
-//        public void setImageURL(String imageURL) {
-//            this.imageURL = imageURL;
-//        }
-//
-//        public String getName() {
-//            return name;
-//        }
-//        public void setName(String name) {
-//            this.name = name;
-//        }
-//
-//        public String getArtist() {
-//            return artist;
-//        }
-//        public void setArtist(String artist) {
-//            this.artist = artist;
-//        }
-//    }
 }
