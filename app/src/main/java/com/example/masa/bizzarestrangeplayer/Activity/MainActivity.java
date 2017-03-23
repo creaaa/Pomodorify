@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements
     ArrayList<Track> currentSetPlaylist = new ArrayList<>();
 
 
-    /* UI */
+    /* UI Tab1 */
 
     ImageView jacketImageView;
     TextView loginStateTextView, setStateTextView, timerStateTextView;
@@ -96,8 +96,14 @@ public class MainActivity extends AppCompatActivity implements
     TextView timerTextView;
     Button cancelButton;
     ToggleButton playerToggleButton;
+
+
+    /* UI Tab2 */
+
     Button nextSongButton;
     Button musicPauseButton;
+
+
 
 
     /* Timer setting class */
@@ -145,6 +151,12 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
         // とりま動いてるけど...。
+
+
+        // FIXME: これないと落ちるが汚い。なんとかしろ。
+        if (timerTextView.getText().toString().equals("")) {
+            return;
+        }
 
 
         // mission controlからの復帰時、タイマーを再開
