@@ -1,5 +1,5 @@
 
-package com.example.masa.bizzarestrangeplayer;
+package com.example.masa.bizzarestrangeplayer.Async;
 
 import android.os.AsyncTask;
 

@@ -23,9 +23,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.masa.bizzarestrangeplayer.CreatePlaylistAsyncTask;
+import com.example.masa.bizzarestrangeplayer.Async.CreatePlaylistAsyncTask;
 import com.example.masa.bizzarestrangeplayer.Model.Track;
-import com.example.masa.bizzarestrangeplayer.PutSongsToPlaylistAsyncTask;
+import com.example.masa.bizzarestrangeplayer.Async.PutSongsToPlaylistAsyncTask;
 import com.example.masa.bizzarestrangeplayer.R;
 import com.squareup.picasso.Picasso;
 
@@ -48,6 +48,7 @@ import static android.os.Build.VERSION_CODES.M;
 
 
 public class SetListResultActivity extends AppCompatActivity {
+
 
     ListView listView;
     MyAdapter adapter;
@@ -147,6 +148,7 @@ public class SetListResultActivity extends AppCompatActivity {
                 if (countDown != null) {
                     countDown.cancel();
                 }
+
                 MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
 
             }
