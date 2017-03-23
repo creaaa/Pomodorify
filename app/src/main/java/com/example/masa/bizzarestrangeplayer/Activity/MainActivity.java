@@ -254,6 +254,8 @@ public class MainActivity extends AppCompatActivity implements
                         if (countDown != null) {
                             Log.d(TAG, "はいとおったー1");
                             countDown.cancel();
+                            isTimerActive= false;
+
                         }
                         break;
                 }
@@ -303,15 +305,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // addFilterToImageView();
 
-
-        // Picasso.with(getApplicationContext()).load(R.drawable.phantomjacket).into(jacketImageView);
-
-        // jacketImageView.invalidate();
-
         renewViews(workoutTime);
-
-        //renewSetInfo();
-        //renewTimerStateInfo(state);
 
 
 
@@ -672,16 +666,18 @@ public class MainActivity extends AppCompatActivity implements
             // いれると自然。だが、ノータッチで勝手にfinishしたときにバグっていく。
             // 制御できないと思ったら、ここをコメントアウトしろ
 
-            // ikusoTimerReset();
+            // TODO: kusoTimerReset
+
+            if (isTimerActive == false) {
+                kusoTimerReset();
+            } else {
+                System.out.println("華麗に回避");
+            }
 
 
 
 
-
-
-
-
-            // ここ書いててまじひどい目あった。てかなんだこのコード。クソが
+            // ここ書いててまじひどい目あった。てかなんだこのコード
 
 //            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
 //
@@ -901,6 +897,9 @@ public class MainActivity extends AppCompatActivity implements
 
     /* Inner Class */
 
+
+    Boolean isTimerActive = false;
+
     private class CountDown extends CountDownTimer {
 
 
@@ -1005,6 +1004,8 @@ public class MainActivity extends AppCompatActivity implements
         // Timerのカウント周期で呼ばれる
         @Override
         public void onTick(long millisUntilFinished) {
+
+            isTimerActive = true;
 
             renewTimerInfo(millisUntilFinished);
 
