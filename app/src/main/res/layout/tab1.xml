@@ -6,36 +6,38 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-    android:id="@+id/loginStateTextView"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="17dp"
-    android:layout_marginTop="74dp"
-    android:text="Login: ND"
-    android:textSize="22sp"
-    android:layout_alignParentTop="true"
-    android:layout_alignParentStart="true" />
+    <!--<TextView-->
+    <!--android:id="@+id/loginStateTextView"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginStart="17dp"-->
+    <!--android:layout_marginTop="74dp"-->
+    <!--android:text="Login: ND"-->
+    <!--android:textSize="22sp"-->
+    <!--android:layout_alignParentTop="true"-->
+    <!--android:layout_alignParentStart="true" />-->
 
-    <TextView
-    android:id="@+id/setStateTextView"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-        android:text="Set: 0"
-    android:textSize="22sp"
-        android:layout_alignBaseline="@+id/loginStateTextView"
-        android:layout_alignBottom="@+id/loginStateTextView"
-        android:layout_alignStart="@+id/timerTextView" />
+    <!--<TextView-->
+        <!--android:id="@+id/setStateTextView"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignBaseline="@+id/loginStateTextView"-->
+        <!--android:layout_alignBottom="@+id/loginStateTextView"-->
+        <!--android:layout_alignParentEnd="true"-->
+        <!--android:layout_toEndOf="@+id/timerTextView"-->
+        <!--android:text="Set: 0"-->
+        <!--android:textAlignment="textStart"-->
+        <!--android:textSize="22sp" />-->
 
-    <TextView
-    android:id="@+id/timerStateTextView"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignEnd="@+id/loginStateTextView"
-    android:layout_alignStart="@+id/loginStateTextView"
-    android:layout_below="@+id/loginStateTextView"
-    android:layout_marginTop="13dp"
-    android:text="State: " />
+    <!--<TextView-->
+    <!--android:id="@+id/timerStateTextView"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignEnd="@+id/loginStateTextView"-->
+    <!--android:layout_alignStart="@+id/loginStateTextView"-->
+    <!--android:layout_below="@+id/loginStateTextView"-->
+    <!--android:layout_marginTop="13dp"-->
+    <!--android:text="State: " />-->
 
 
 
@@ -69,6 +71,7 @@
     android:textOn="Stop"
         android:layout_alignBaseline="@+id/cancelButton"
         android:layout_alignBottom="@+id/cancelButton"
-        android:layout_alignStart="@+id/timerTextView" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="48dp" />
 
 </RelativeLayout>

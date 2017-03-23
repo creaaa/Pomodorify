@@ -2,7 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="Timer Sets">
     <ListPreference
-        android:defaultValue="1500000"
         android:key="workout_time"
         android:summary="Designate workout time.(Minutes)"
         android:title="Workout Time"
@@ -11,7 +10,6 @@
         />
 
     <ListPreference
-        android:defaultValue="300000"
         android:key="break_time"
         android:summary="Designate break time.(Minutes)"
         android:title="Break Time"
@@ -20,7 +18,6 @@
         />
 
     <ListPreference
-        android:defaultValue="100000"
         android:key="prepare_time"
         android:summary="Designate prepare time.(Seconds)"
         android:title="Prepare Time"
@@ -33,7 +30,6 @@
     <PreferenceCategory android:title="Sets">
 
     <ListPreference
-        android:defaultValue="1"
         android:key="set"
         android:summary="Designate Sets."
         android:title="Sets"

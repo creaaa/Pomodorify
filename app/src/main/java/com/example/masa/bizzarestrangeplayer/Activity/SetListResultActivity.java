@@ -112,7 +112,7 @@ public class SetListResultActivity extends AppCompatActivity {
         // もし最終セットでなければ、タイマーをセット
         if (currentSet != max_set) {
 
-            breakTime = Long.valueOf(pref.getString("break_time", "99000"));
+            breakTime = Long.valueOf(pref.getString("break_time", "9000"));
 
             System.out.println("残り休憩時間: " + breakTime);
             countDown = new CountDown(breakTime, 1000);

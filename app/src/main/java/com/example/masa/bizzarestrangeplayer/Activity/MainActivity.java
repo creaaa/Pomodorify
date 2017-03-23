@@ -61,6 +61,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements
     
     private void kusoTimerReset() {
 
-        Log.d(TAG, "kusoTimerReset: くそ！とおってる！");
+        Log.d(TAG, "kusoTimerReset:");
         
         String[] tmp = (timerTextView.getText().toString()).split(":", 0);
 
@@ -256,10 +257,7 @@ public class MainActivity extends AppCompatActivity implements
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        workoutTime = Long.valueOf(pref.getString("workout_time", "99000"));
-        breakTime   = Long.valueOf(pref.getString("break_time", "99000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "99000"));
-        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
+        setAllTimeSetting();
 
 
         /* 3. UI componet initialize */
@@ -287,37 +285,28 @@ public class MainActivity extends AppCompatActivity implements
         musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
 
 
+        // addFilterToImageView();
 
-        float brightness = -125;
-
-        ColorMatrix cmx = new ColorMatrix(new float[] {
-
-                  1, 0, 0, 0, brightness
-                , 0, 1, 0, 0, brightness
-                , 0, 0, 1, 0, brightness
-                , 0, 0, 0, 1, 0 });
-
-        jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
-        jacketImageView.setAlpha(0.8f);
 
         // Picasso.with(getApplicationContext()).load(R.drawable.phantomjacket).into(jacketImageView);
 
-        jacketImageView.invalidate();
+        // jacketImageView.invalidate();
 
-//        renewViews(workoutTime);
+        renewViews(workoutTime);
 
-        renewSetInfo();
-        renewTimerStateInfo(state);
+        //renewSetInfo();
+        //renewTimerStateInfo(state);
 
 
 
         /* 4. set event listener */
 
         playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                Log.d(TAG, "onCheckedChanged: ここかよ！くそが！！！");
+                Log.d(TAG, "onCheckedChanged: ここかよ！");
 
                 if (isChecked) {
 
@@ -329,8 +318,6 @@ public class MainActivity extends AppCompatActivity implements
                         countDown = new CountDown(prepareTime, 1000);
                         countDown.start();
 
-                        //renewTimerInfo(prepareTime);
-                        //renewTimerStateInfo(TimerState.Prepare);
                         renewViews(prepareTime);
 
                         playerToggleButton.setVisibility(View.INVISIBLE);
@@ -343,33 +330,19 @@ public class MainActivity extends AppCompatActivity implements
 
 
                     // 一時停止中(state: Pause)のとき、タイマーを再開
-                    String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+                    kusoTimerReset();
 
-                    state = TimerState.Workout;
-                    int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-                    int second = Integer.parseInt(tmp[1]) * 1000;
-                    countDown = new CountDown(minute + second, 1000);
-                    countDown.start();
+                    // renewTimerStateInfo(TimerState.Workout);
 
-
-                    renewTimerStateInfo(TimerState.Workout);
-
-                    // onCreateOptionsMenu, onPrepareOptionsMenuを再度走らせる
-                    // ↓これ、いらないっしょ。だからコメントアウトした
-                    // invalidateOptionsMenu();
+                    renewViews(workoutTime);
 
 
                 } else {  // 再生中のとき、一時停止する
 
-
-                    System.out.println("くるよな！そりゃそうよな！");
-
                     if (currentSet >= MAX_TIMES) {
-                        System.out.println("よかよか、きとる");
                         System.out.println("状態: " + state);
                         return;
                     }
-
 
                     // ここ、実は必要。
                     // 1. なぜならキャンセルボタンを押したとき 2. state = Workout時にonStopしたとき
@@ -392,6 +365,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
         cancelButton.setOnClickListener(new View.OnClickListener(){
+
             @Override
             public void onClick(View v) {
 
@@ -595,6 +569,24 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
+    private void addFilterToImageView() {
+
+        float brightness = -125;
+
+        ColorMatrix cmx = new ColorMatrix(new float[] {
+
+                1, 0, 0, 0, brightness
+                , 0, 1, 0, 0, brightness
+                , 0, 0, 1, 0, brightness
+                , 0, 0, 0, 1, 0 });
+
+        jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
+        jacketImageView.setAlpha(0.8f);
+
+    }
+
+
+
     /* callback method */
 
 
@@ -665,19 +657,20 @@ public class MainActivity extends AppCompatActivity implements
 
             System.out.println("状態: " + state);
 
-            // TODO: ここコメントアウトすると、タイマーが走る。
-            // かといってコメントインすると、設定が即座に反映されなくなる。どうすれば
-
-
-            // タイマーを再セット。Standby状態だし支障ない、そうに違いない
-            workoutTime = Long.valueOf(pref.getString("workout_time", "99000"));
-            breakTime   = Long.valueOf(pref.getString("break_time", "99000"));
-            prepareTime = Long.valueOf(pref.getString("prepare_time", "99000"));
-            MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
+            setAllTimeSetting();
 
             renewViews(workoutTime);
 
         }
+
+    }
+
+    private void setAllTimeSetting() {
+
+        workoutTime = Long.valueOf(pref.getString("workout_time", "9000"));
+        breakTime   = Long.valueOf(pref.getString("break_time", "9000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "9000"));
+        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
 
     }
 
@@ -949,6 +942,10 @@ public class MainActivity extends AppCompatActivity implements
 
                     renewViews(prepareTime);
 
+                    if (mPlayer != null) {
+                        mPlayer.pause(null);
+                    }
+
                     break;
 
                 case Prepare:
@@ -1061,7 +1058,6 @@ public class MainActivity extends AppCompatActivity implements
                     TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
 
                     if (result.getTracks() == null) {
-                        System.out.println("早期リターン！");
                         return;
                     }
 
