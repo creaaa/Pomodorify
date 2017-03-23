@@ -153,7 +153,15 @@ public class MainActivity extends AppCompatActivity implements
         // TODO: 設定画面からの復帰でもここが発動してしまう。遷移元に応じて場合分けが必要。
         // これでいいのか！？
         if (currentSet == 1) {
-            return;
+
+            // タイマーを再セット。Standby状態だし支障ない、そうに違いない
+            workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
+            breakTime = Long.valueOf(pref.getString("break_time", "10000"));
+            prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
+            MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+
+            renewViews(workoutTime);
+
         }
 
         // 最後のセットで、SetListResultActivityから復帰してここが通ると、
