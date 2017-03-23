@@ -129,32 +129,44 @@ public class MainActivity extends AppCompatActivity implements
         // ミッションコントロールから復帰の場合、タイマーを再点火
         if (countDown != null) {
 
-            System.out.println("うん");
+//            System.out.println("うん");
+//
+//            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+//            if (timerTextView.getText().toString().equals("")) {
+//                return;
+//            }
+//
+//            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+//
+//            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+//            int second = Integer.parseInt(tmp[1]) * 1000;
+//            countDown = new CountDown(minute + second, 1000);
+//            countDown.start();
 
-            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-            if (timerTextView.getText().toString().equals("")) {
-                return;
-            }
-
-            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
-
-            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-            int second = Integer.parseInt(tmp[1]) * 1000;
-            countDown = new CountDown(minute + second, 1000);
-            countDown.start();
-
-            return;
-
-        } else {
-            System.out.println("ええ？？ないの！？");
+            fromMissionControl();
         }
 
 
         // TODO: 設定画面からの復帰でもここが発動してしまう。遷移元に応じて場合分けが必要。
         // これでいいのか！？
+        // TODO: だめ。2週目だと↑の条件が先にマッチしてしまう。
+
         if (currentSet == 1) {
+
+//            System.out.println("設定フラグメントからの復帰。あってる？");
+//
+//            // タイマーを再セット。Standby状態だし支障ない、そうに違いない
+//            workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
+//            breakTime = Long.valueOf(pref.getString("break_time", "10000"));
+//            prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
+//            MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+//
+//            renewViews(workoutTime);
+
+            fromPrefFragment();
             return;
         }
+
 
         // 最後のセットで、SetListResultActivityから復帰してここが通ると、
         // timer stringが空なので、formatができず、落ちる。
@@ -163,9 +175,6 @@ public class MainActivity extends AppCompatActivity implements
             System.out.println("あぶないとこやで。");
             return;
         }
-
-
-
 
 
         // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
@@ -198,7 +207,9 @@ public class MainActivity extends AppCompatActivity implements
                     case 100:
                         // タイマーストップ
                         System.out.println("タイマーストップ！！！");
-                        countDown.cancel();
+                        if (countDown != null) {
+                            countDown.cancel();
+                        }
                         break;
                 }
             }
@@ -207,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements
 
         /* 1. Auth Process */
 
-        doAuth();
+        // doAuth();
 
 
         /* 2. prepare Preference and initialize user's interval setting */
@@ -250,11 +261,15 @@ public class MainActivity extends AppCompatActivity implements
         jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
         jacketImageView.setAlpha(0.8f);
 
-        Picasso.with(getApplicationContext()).load(R.drawable.fever).into(jacketImageView);
+        // Picasso.with(getApplicationContext()).load(R.drawable.phantomjacket).into(jacketImageView);
 
         jacketImageView.invalidate();
 
-        renewViews(workoutTime);
+//        renewViews(workoutTime);
+
+        renewSetInfo();
+        renewTimerStateInfo(state);
+
 
 
         /* 4. set event listener */
@@ -1101,4 +1116,50 @@ public class MainActivity extends AppCompatActivity implements
 
         nowMusicTextView.setText(info);
     }
+
+
+    /* onRestart時の制御 */
+
+    private void fromMissionControl() {
+
+        System.out.println("Mission Controlからの復帰。");
+
+        if (currentSet==1) {
+            System.out.println("はーいうまく回避。");
+            return;
+        }
+
+
+        System.out.println("うん");
+
+        // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+        if (timerTextView.getText().toString().equals("")) {
+            return;
+        }
+
+        String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+
+        int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+        int second = Integer.parseInt(tmp[1]) * 1000;
+        countDown = new CountDown(minute + second, 1000);
+        countDown.start();
+    }
+
+
+    private void fromPrefFragment() {
+
+        System.out.println("設定フラグメントからの復帰。あってる？");
+
+        // タイマーを再セット。Standby状態だし支障ない、そうに違いない
+        workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
+        breakTime = Long.valueOf(pref.getString("break_time", "10000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
+        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+
+        renewViews(workoutTime);
+    }
+
+
+
+
 }

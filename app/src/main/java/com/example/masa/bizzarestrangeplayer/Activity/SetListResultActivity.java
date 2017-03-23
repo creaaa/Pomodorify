@@ -142,7 +142,9 @@ public class SetListResultActivity extends AppCompatActivity {
 
 
                 // タイマーを停止。と同時に、前画面のタイマーも停止
-                countDown.cancel();
+                if (countDown != null) {
+                    countDown.cancel();
+                }
                 MainActivity.timerRemoteStopHandler.sendEmptyMessage(100);
 
             }
@@ -419,8 +421,6 @@ public class SetListResultActivity extends AppCompatActivity {
 //            });
         }});
 
-
-
             return view;
         }
     }
@@ -428,14 +428,17 @@ public class SetListResultActivity extends AppCompatActivity {
 
     private class CountDown extends CountDownTimer {
 
+
         public CountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
+
 
         @Override
         public void onFinish() {
             finish();
         }
+
 
         // Timerのカウント周期で呼ばれる
         @Override
