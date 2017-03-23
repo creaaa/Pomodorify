@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/nowMusicTextView"
+        android:layout_width="match_parent"
+        android:layout_height="180px"
+        android:layout_marginTop="91dp"
+        android:background="@color/colorAccent"
+        android:text="DummySong - the dummy -"
+        android:textAlignment="center"
+        android:textSize="26dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+
+    <ImageView
+        android:id="@+id/jacketImageView"
+        android:layout_width="match_parent"
+        android:layout_height="380px"
+        android:layout_above="@+id/cancelButton"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/nowMusicTextView" />
+
+
+    <Button
+    android:id="@+id/nextSongButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="21dp"
+        android:text="next song"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="44dp" />
+
+    <Button
+    android:id="@+id/musicPauseButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+        android:text="song pause"
+        android:layout_marginEnd="38dp"
+        android:layout_alignBaseline="@+id/nextSongButton"
+        android:layout_alignBottom="@+id/nextSongButton"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>

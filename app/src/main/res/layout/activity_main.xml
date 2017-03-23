@@ -24,122 +24,133 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+
+        <include
             android:id="@+id/tab1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            layout="@layout/tab1" />
 
-            <TextView
-                android:id="@+id/loginStateTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="17dp"
-                android:layout_marginTop="74dp"
-                android:text="Login: ND"
-                android:textSize="22sp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true" />
+        <!--<RelativeLayout-->
+            <!--android:id="@+id/tab1"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="vertical">-->
 
-            <TextView
-                android:id="@+id/setStateTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/nowMusicTextView"
-                android:layout_alignStart="@+id/timerTextView"
-                android:text="Set: 0"
-                android:textSize="22sp" />
+            <!--<TextView-->
+                <!--android:id="@+id/loginStateTextView"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginStart="17dp"-->
+                <!--android:layout_marginTop="74dp"-->
+                <!--android:text="Login: ND"-->
+                <!--android:textSize="22sp"-->
+                <!--android:layout_alignParentTop="true"-->
+                <!--android:layout_alignParentStart="true" />-->
 
-            <TextView
-                android:id="@+id/timerStateTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@+id/loginStateTextView"
-                android:layout_alignStart="@+id/loginStateTextView"
-                android:layout_below="@+id/loginStateTextView"
-                android:layout_marginTop="13dp"
-                android:text="State: " />
+            <!--<TextView-->
+                <!--android:id="@+id/setStateTextView"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_above="@+id/nowMusicTextView"-->
+                <!--android:layout_alignStart="@+id/timerTextView"-->
+                <!--android:text="Set: 0"-->
+                <!--android:textSize="22sp" />-->
 
-            <TextView
-                android:id="@+id/nowMusicTextView"
-                android:layout_width="match_parent"
-                android:layout_height="180px"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/loginStateTextView"
-                android:layout_marginTop="37dp"
-                android:background="@color/colorAccent"
-                android:text="DummySong - the dummy -"
-                android:textAlignment="center"
-                android:textSize="26dp" />
+            <!--<TextView-->
+                <!--android:id="@+id/timerStateTextView"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignEnd="@+id/loginStateTextView"-->
+                <!--android:layout_alignStart="@+id/loginStateTextView"-->
+                <!--android:layout_below="@+id/loginStateTextView"-->
+                <!--android:layout_marginTop="13dp"-->
+                <!--android:text="State: " />-->
 
-            <ImageView
-                android:id="@+id/jacketImageView"
-                android:layout_width="match_parent"
-                android:layout_height="380px"
-                android:layout_above="@+id/cancelButton"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/nowMusicTextView" />
+            <!--<TextView-->
+                <!--android:id="@+id/nowMusicTextView"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="180px"-->
+                <!--android:layout_alignParentStart="true"-->
+                <!--android:layout_below="@+id/loginStateTextView"-->
+                <!--android:layout_marginTop="37dp"-->
+                <!--android:background="@color/colorAccent"-->
+                <!--android:text="DummySong - the dummy -"-->
+                <!--android:textAlignment="center"-->
+                <!--android:textSize="26dp" />-->
+
+            <!--<ImageView-->
+                <!--android:id="@+id/jacketImageView"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="380px"-->
+                <!--android:layout_above="@+id/cancelButton"-->
+                <!--android:layout_alignParentStart="true"-->
+                <!--android:layout_below="@+id/nowMusicTextView" />-->
 
 
-            <TextView
-                android:id="@+id/timerTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:textColor="@color/white"
-                android:textSize="72sp" />
+            <!--<TextView-->
+                <!--android:id="@+id/timerTextView"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:layout_centerVertical="true"-->
+                <!--android:textColor="@color/white"-->
+                <!--android:textSize="72sp" />-->
 
-            <Button
-                android:id="@+id/cancelButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignStart="@+id/loginStateTextView"
-                android:layout_marginBottom="73dp"
-                android:layout_marginStart="28dp"
-                android:text="Reset"
-                android:visibility="invisible" />
+            <!--<Button-->
+                <!--android:id="@+id/cancelButton"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentBottom="true"-->
+                <!--android:layout_alignStart="@+id/loginStateTextView"-->
+                <!--android:layout_marginBottom="73dp"-->
+                <!--android:layout_marginStart="28dp"-->
+                <!--android:text="Reset"-->
+                <!--android:visibility="invisible" />-->
 
-            <ToggleButton
-                android:id="@+id/playerToggleButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/jacketImageView"
-                android:layout_marginBottom="73dp"
-                android:layout_marginEnd="44dp"
-                android:text="ToggleButton"
-                android:textOff="Start"
-                android:textOn="Stop" />
+            <!--<ToggleButton-->
+                <!--android:id="@+id/playerToggleButton"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentEnd="true"-->
+                <!--android:layout_below="@+id/jacketImageView"-->
+                <!--android:layout_marginBottom="73dp"-->
+                <!--android:layout_marginEnd="44dp"-->
+                <!--android:text="ToggleButton"-->
+                <!--android:textOff="Start"-->
+                <!--android:textOn="Stop" />-->
 
-        </RelativeLayout>
+        <!--</RelativeLayout>-->
 
-        <RelativeLayout
+
+        <include
             android:id="@+id/tab2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            layout="@layout/tab2" />
 
-            <Button
-                android:id="@+id/nextSongButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
 
-                android:layout_marginBottom="12dp"
-                android:layout_marginEnd="12dp"
+        <!--<RelativeLayout-->
+            <!--android:id="@+id/tab2"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="vertical">-->
 
-                android:text="next song" />
+            <!--<Button-->
+                <!--android:id="@+id/nextSongButton"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
 
-            <Button
-                android:id="@+id/musicPauseButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="12dp"
-                android:text="song pause" />
+                <!--android:layout_marginBottom="12dp"-->
+                <!--android:layout_marginEnd="12dp"-->
 
-        </RelativeLayout>
+                <!--android:text="next song" />-->
+
+            <!--<Button-->
+                <!--android:id="@+id/musicPauseButton"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginBottom="12dp"-->
+                <!--android:layout_marginStart="12dp"-->
+                <!--android:text="song pause" />-->
+
+        <!--</RelativeLayout>-->
 
     </FrameLayout>
 

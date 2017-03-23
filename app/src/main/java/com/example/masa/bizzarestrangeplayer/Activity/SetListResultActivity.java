@@ -80,8 +80,10 @@ public class SetListResultActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_list_result);
 
+
         android.support.v7.app.ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
+
 
         listView = (ListView) findViewById(R.id.setListListView);
         adapter = new MyAdapter(this, R.layout.song_cell);
@@ -110,7 +112,7 @@ public class SetListResultActivity extends AppCompatActivity {
         // もし最終セットでなければ、タイマーをセット
         if (currentSet != max_set) {
 
-            breakTime = Long.valueOf(pref.getString("break_time", "9000"));
+            breakTime = Long.valueOf(pref.getString("break_time", "99000"));
 
             System.out.println("残り休憩時間: " + breakTime);
             countDown = new CountDown(breakTime, 1000);

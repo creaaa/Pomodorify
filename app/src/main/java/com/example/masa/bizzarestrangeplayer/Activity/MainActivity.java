@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
 
+    private final String TAG = "深刻なバグ";
+
     private enum TimerState {
         Standby, Workout, Pause, Break, Prepare
     }
@@ -153,6 +155,11 @@ public class MainActivity extends AppCompatActivity implements
         // とりま動いてるけど...。
 
 
+        // 設定画面から復帰したときは、↓のタイマーを走らせる処理をしたくないため、早期リターン
+        if (state == TimerState.Standby) {
+            return;
+        }
+
         // FIXME: これないと落ちるが汚い。なんとかしろ。
         if (timerTextView.getText().toString().equals("")) {
             return;
@@ -221,9 +228,9 @@ public class MainActivity extends AppCompatActivity implements
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case 100:
-                        // タイマーストップ
                         System.out.println("タイマーストップ！！！");
                         if (countDown != null) {
+                            Log.d(TAG, "はいとおったー1");
                             countDown.cancel();
                         }
                         break;
@@ -241,10 +248,10 @@ public class MainActivity extends AppCompatActivity implements
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
-        breakTime = Long.valueOf(pref.getString("break_time", "10000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
-        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+        workoutTime = Long.valueOf(pref.getString("workout_time", "99000"));
+        breakTime   = Long.valueOf(pref.getString("break_time", "99000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "99000"));
+        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
 
 
         /* 3. UI componet initialize */
@@ -356,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements
                     state = TimerState.Pause;
 
                     if(countDown != null) {
+                        Log.d(TAG, "はいとおったー2");
                         countDown.cancel();
                     }
 
@@ -373,6 +381,7 @@ public class MainActivity extends AppCompatActivity implements
                 dialog.show(getFragmentManager(), "dialog_basic");
 
                 if(countDown != null) {
+                    Log.d(TAG, "はいとおったー3");
                     countDown.cancel();
                 }
 
@@ -605,6 +614,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
+
         else if (requestCode == LAUNCH_SETLIST_RESULT) {
 
             System.out.println("セトリ画面からの復帰");
@@ -622,16 +632,23 @@ public class MainActivity extends AppCompatActivity implements
             countDown.start();
         }
 
+
         // 設定フラグメント画面から復帰時の処理
         else if (requestCode == LAUNCH_PREF) {
 
             System.out.println("設定画面からの復帰");
 
+            System.out.println("状態: " + state);
+
+            // TODO: ここコメントアウトすると、タイマーが走る。
+            // かといってコメントインすると、設定が即座に反映されなくなる。どうすれば
+
+
             // タイマーを再セット。Standby状態だし支障ない、そうに違いない
-            workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
-            breakTime = Long.valueOf(pref.getString("break_time", "10000"));
-            prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
-            MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+            workoutTime = Long.valueOf(pref.getString("workout_time", "99000"));
+            breakTime   = Long.valueOf(pref.getString("break_time", "99000"));
+            prepareTime = Long.valueOf(pref.getString("prepare_time", "99000"));
+            MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
 
             renewViews(workoutTime);
 
@@ -736,40 +753,33 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
 
-        if (countDown != null) {
-            System.out.println("やった♪消滅");
+        if (state == TimerState.Standby || state == TimerState.Break) {
+
+        } else {
+            Log.d(TAG, "はいとおったー4");
+            System.out.println("遷移直前の状態: " + state);
             countDown.cancel();
         }
 
 
-        System.out.println("ここでくんのかよ...");
-
         // タイマーの種類に応じて退避行動の挙動を変化
-        switch (state) {
-
-            case Standby:
-                break;
-
-            case Workout:
-
-                //これだと、startActivityしたときも発動してしまう。他の手を考えないと。。。
-
-                // state = TimerState.Pause;
-                // playerToggleButton.setChecked(false);
-
-                // renewTimerStateInfo(TimerState.Pause);
-
-                break;
-
-            case Pause:
-                break;
-
-            case Break:
-                break;
-
-            case Prepare:
-                break;
-        }
+//        switch (state) {
+//
+//            case Standby:
+//                break;
+//
+//            case Workout:
+//                break;
+//
+//            case Pause:
+//                break;
+//
+//            case Break:
+//                break;
+//
+//            case Prepare:
+//                break;
+//        }
 
         super.onStop();
     }
@@ -809,9 +819,9 @@ public class MainActivity extends AppCompatActivity implements
 
                 Intent i = new Intent(this, MyConfigActivity.class);
 
-                // 戻るボタンを押すとfinish()が内部的に呼ばれてgit remote -vいるため、
+                // 戻るボタンを押すとfinish()が内部的に呼ばれているため、
                 // onActivityResultで処理を加えられる
-                startActivityForResult(i, LAUNCH_SETLIST_RESULT);
+                startActivityForResult(i, LAUNCH_PREF);
 
                 return true;
 
@@ -847,15 +857,18 @@ public class MainActivity extends AppCompatActivity implements
 
                     if (currentSet >= MAX_TIMES) {
 
+                        Log.d(TAG, "maxのほう");
+
                         // 3/22 18:00 追加
                         invalidateOptionsMenu();
 
                         state = TimerState.Standby;
                         System.out.println("状態: " + state);
 
-                        if(countDown != null) {
+//                        if(countDown != null) {
+                            Log.d(TAG, "はいとおったー5");
                             countDown.cancel();
-                        }
+//                        }
 
 
                         // ここだと、putExtraで1が渡るからおかしいっぽいな？
@@ -879,11 +892,11 @@ public class MainActivity extends AppCompatActivity implements
                         //currentSet = 1;
                         //renewSetInfo();
 
-
-
                         return;
                     }
 
+
+                    Log.d(TAG, "ふつーの workout onFinish");
 
                     state = TimerState.Break;
                     countDown = new CountDown(breakTime, 1000);
@@ -902,6 +915,9 @@ public class MainActivity extends AppCompatActivity implements
                     state = TimerState.Prepare;
 
                     countDown = new CountDown(prepareTime, 1000);
+
+                    Log.d(TAG, "セットされたprepareTime: " + prepareTime);
+
                     countDown.start();
 
                     increaseCurrentSet();
@@ -936,6 +952,8 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void onTick(long millisUntilFinished) {
             renewTimerInfo(millisUntilFinished);
+
+            // System.out.println("おら！画面1の残り時間: " + millisUntilFinished);
         }
     }
 
@@ -961,7 +979,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private void increaseCurrentSet() { currentSet += 1; }
 
-
     private void launchSetListActivity() {
 
         Intent i = new Intent(this, SetListResultActivity.class);
@@ -975,8 +992,6 @@ public class MainActivity extends AppCompatActivity implements
 
         startActivityForResult(i, LAUNCH_SETLIST_RESULT);
     }
-
-
 
 
 
@@ -1093,15 +1108,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-//    private void enqueueMusicToPlayer() {
-//        for (Track eachTrack: currentSetPlaylist) {
-//            mPlayer.queue(null, eachTrack.getId());
-//            System.out.println(eachTrack.getName() + "がenqueueされました");
-//        }
-//    }
-
-
-
     /* renew UI */
 
     private void renewViews(Long kind_of_timer) {
@@ -1147,50 +1153,5 @@ public class MainActivity extends AppCompatActivity implements
 
         nowMusicTextView.setText(info);
     }
-
-
-    /* onRestart時の制御 */
-
-    private void fromMissionControl() {
-
-        System.out.println("Mission Controlからの復帰。");
-
-        if (currentSet==1) {
-            System.out.println("はーいうまく回避。");
-            return;
-        }
-
-
-        System.out.println("うん");
-
-        // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-        if (timerTextView.getText().toString().equals("")) {
-            return;
-        }
-
-        String[] tmp = (timerTextView.getText().toString()).split(":", 0);
-
-        int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-        int second = Integer.parseInt(tmp[1]) * 1000;
-        countDown = new CountDown(minute + second, 1000);
-        countDown.start();
-    }
-
-
-    private void fromPrefFragment() {
-
-        System.out.println("設定フラグメントからの復帰。あってる？");
-
-        // タイマーを再セット。Standby状態だし支障ない、そうに違いない
-        workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
-        breakTime = Long.valueOf(pref.getString("break_time", "10000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
-        MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
-
-        renewViews(workoutTime);
-    }
-
-
-
 
 }
