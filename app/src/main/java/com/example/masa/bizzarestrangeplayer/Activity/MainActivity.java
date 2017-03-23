@@ -141,15 +141,21 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO: ここが怪しい！！！やっぱそうだった！！！！！！
         // FIXME: その場しのぎの修正！！！！ロジック考えてなんとかしろ
-//        if (currentSet >= MAX_TIMES) {
-        if (currentSet > MAX_TIMES) {
-            System.out.println("あぶないとこやで。");
+        // てかこんなのボタンおしたときにやらせればええわ
 
-            currentSet = 1;
-            renewSetInfo();
 
-            return;
-        }
+
+//        if (currentSet > MAX_TIMES) {
+//            System.out.println("あぶないとこやで。");
+//
+//            currentSet = 1;
+//            renewSetInfo();
+//
+//            return;
+//        }
+
+
+
 
 
         // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
@@ -163,12 +169,14 @@ public class MainActivity extends AppCompatActivity implements
 
 
         // 3/22 23:00 これかかないとだめ！！
+
+
         if (state == TimerState.Break) {
             renewTimerStateInfo(state);
             return;
         }
 
-        
+
         // FIXME: これないと落ちるが汚い。なんとかしろ。
         if (timerTextView.getText().toString().equals("")) {
             return;
