@@ -185,6 +185,9 @@ public class MainActivity extends AppCompatActivity implements
 
         // mission controlからの復帰時、タイマーを再開
     // TODO: ここじょうぜつ！！！！！！！！！やばい！！
+
+
+
         //kusoTimerReset();
 
     }
@@ -658,11 +661,25 @@ public class MainActivity extends AppCompatActivity implements
 
             System.out.println("セトリ画面からの復帰");
 
-//            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-//            if (timerTextView.getText().toString().equals("")) {
-//                return;
-//            }
-//
+
+
+            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+            if (timerTextView.getText().toString().equals("")) {
+                return;
+            }
+
+            // これ、いれるか、いれないか、わかれる
+            // いれると自然。だが、ノータッチで勝手にfinishしたときにバグっていく。
+            // 制御できないと思ったら、ここをコメントアウトしろ
+
+            // ikusoTimerReset();
+
+
+
+
+
+
+
 
             // ここ書いててまじひどい目あった。てかなんだこのコード。クソが
 
