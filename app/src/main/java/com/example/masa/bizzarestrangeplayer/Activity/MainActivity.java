@@ -129,44 +129,32 @@ public class MainActivity extends AppCompatActivity implements
         // ミッションコントロールから復帰の場合、タイマーを再点火
         if (countDown != null) {
 
-//            System.out.println("うん");
-//
-//            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-//            if (timerTextView.getText().toString().equals("")) {
-//                return;
-//            }
-//
-//            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
-//
-//            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-//            int second = Integer.parseInt(tmp[1]) * 1000;
-//            countDown = new CountDown(minute + second, 1000);
-//            countDown.start();
+            System.out.println("うん");
 
-            fromMissionControl();
+            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+            if (timerTextView.getText().toString().equals("")) {
+                return;
+            }
+
+            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+
+            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+            int second = Integer.parseInt(tmp[1]) * 1000;
+            countDown = new CountDown(minute + second, 1000);
+            countDown.start();
+
+            return;
+
+        } else {
+            System.out.println("ええ？？ないの！？");
         }
 
 
         // TODO: 設定画面からの復帰でもここが発動してしまう。遷移元に応じて場合分けが必要。
         // これでいいのか！？
-        // TODO: だめ。2週目だと↑の条件が先にマッチしてしまう。
-
         if (currentSet == 1) {
-
-//            System.out.println("設定フラグメントからの復帰。あってる？");
-//
-//            // タイマーを再セット。Standby状態だし支障ない、そうに違いない
-//            workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
-//            breakTime = Long.valueOf(pref.getString("break_time", "10000"));
-//            prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
-//            MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
-//
-//            renewViews(workoutTime);
-
-            fromPrefFragment();
             return;
         }
-
 
         // 最後のセットで、SetListResultActivityから復帰してここが通ると、
         // timer stringが空なので、formatができず、落ちる。
@@ -188,11 +176,13 @@ public class MainActivity extends AppCompatActivity implements
         countDown = new CountDown(minute + second, 1000);
 
         countDown.start();
+
     }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -291,9 +281,11 @@ public class MainActivity extends AppCompatActivity implements
                         //renewTimerInfo(prepareTime);
                         //renewTimerStateInfo(TimerState.Prepare);
                         renewViews(prepareTime);
-                        invalidateOptionsMenu();
 
                         playerToggleButton.setVisibility(View.INVISIBLE);
+
+                        // 3/22 18:00 追加
+                        invalidateOptionsMenu();
 
                         return;
                     }
@@ -825,6 +817,8 @@ public class MainActivity extends AppCompatActivity implements
 
                     if (currentSet >= MAX_TIMES) {
 
+                        // 3/22 18:00 追加
+                        invalidateOptionsMenu();
 
                         state = TimerState.Standby;
                         System.out.println("状態: " + state);
@@ -851,6 +845,8 @@ public class MainActivity extends AppCompatActivity implements
                         // よって、launchSetListActivity してから、currentSetをリセットすればよろし。
                         currentSet = 1;
                         renewSetInfo();
+
+
 
                         return;
                     }
