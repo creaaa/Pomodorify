@@ -106,8 +106,6 @@ public class MainActivity extends AppCompatActivity implements
     Button musicPauseButton;
 
 
-
-
     /* Timer setting class */
     private CountDown countDown;
 
@@ -122,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements
     /* Login Info */
     private static final String CLIENT_ID = "8482782774f44e5681ee617adcf6b3f6";
     private static final String REDIRECT_URI = "spotify-player-sample-login://callback";
-    private static final int REQUEST_CODE = 0;
+    private static final int REQUEST_CODE = 3;
     private String mAccessToken;
 
     /* Launch Activity */
@@ -160,6 +158,14 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
 
+
+        // 3/22 23:00 これかかないとだめ！！
+        if (state == TimerState.Break) {
+            renewTimerStateInfo(state);
+            return;
+        }
+
+        
         // FIXME: これないと落ちるが汚い。なんとかしろ。
         if (timerTextView.getText().toString().equals("")) {
             return;
@@ -168,6 +174,15 @@ public class MainActivity extends AppCompatActivity implements
 
         // mission controlからの復帰時、タイマーを再開
 
+        kusoTimerReset();
+
+    }
+    
+    
+    private void kusoTimerReset() {
+
+        Log.d(TAG, "kusoTimerReset: くそ！とおってる！");
+        
         String[] tmp = (timerTextView.getText().toString()).split(":", 0);
 
         int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
@@ -176,7 +191,6 @@ public class MainActivity extends AppCompatActivity implements
         countDown = new CountDown(minute + second, 1000);
 
         countDown.start();
-
     }
 
 
@@ -212,12 +226,6 @@ public class MainActivity extends AppCompatActivity implements
         tabHost.addTab(tab2);
 
         tabHost.setCurrentTab(0);
-
-
-
-
-
-
 
 
 
@@ -259,11 +267,19 @@ public class MainActivity extends AppCompatActivity implements
         jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
 
         loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
+        loginStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
         setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
+
         timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
+        timerStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
         nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
         nowMusicTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
         timerTextView      = (TextView) findViewById(R.id.timerTextView);
+        timerTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
 
         cancelButton       = (Button) findViewById(R.id.cancelButton);
         playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
@@ -300,6 +316,8 @@ public class MainActivity extends AppCompatActivity implements
         playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                Log.d(TAG, "onCheckedChanged: ここかよ！くそが！！！");
 
                 if (isChecked) {
 
@@ -362,10 +380,10 @@ public class MainActivity extends AppCompatActivity implements
 
                     state = TimerState.Pause;
 
-                    if(countDown != null) {
+//                    if(countDown != null) {
                         Log.d(TAG, "はいとおったー2");
                         countDown.cancel();
-                    }
+//                    }
 
                     renewTimerStateInfo(TimerState.Pause);
                 }
@@ -380,10 +398,10 @@ public class MainActivity extends AppCompatActivity implements
                 DialogFragment dialog = new ResetDialogFragment();
                 dialog.show(getFragmentManager(), "dialog_basic");
 
-                if(countDown != null) {
+//                if(countDown != null) {
                     Log.d(TAG, "はいとおったー3");
                     countDown.cancel();
-                }
+//                }
 
                 state = TimerState.Standby;
                 currentSet = 1;
@@ -526,6 +544,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }.execute();
     }
+
     public void connectArtistJsonAndParse() {
 
         try {
@@ -586,6 +605,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Check if result comes from the correct activity
         if (requestCode == REQUEST_CODE) {
+
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
 
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
@@ -615,21 +635,26 @@ public class MainActivity extends AppCompatActivity implements
         }
 
 
+        // TODO 怪しい1
         else if (requestCode == LAUNCH_SETLIST_RESULT) {
 
             System.out.println("セトリ画面からの復帰");
 
-            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-            if (timerTextView.getText().toString().equals("")) {
-                return;
-            }
+//            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+//            if (timerTextView.getText().toString().equals("")) {
+//                return;
+//            }
+//
 
-            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+            // ここ書いててまじひどい目あった。てかなんだこのコード。クソが
 
-            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-            int second = Integer.parseInt(tmp[1]) * 1000;
-            countDown = new CountDown(minute + second, 1000);
-            countDown.start();
+//            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
+//
+//            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
+//            int second = Integer.parseInt(tmp[1]) * 1000;
+//            countDown = new CountDown(minute + second, 1000);
+//            countDown.start();
+
         }
 
 
@@ -787,6 +812,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onDestroy() {
+
         // VERY IMPORTANT! This must always be called or else you will leak resources
         Spotify.destroyPlayer(this);
 
@@ -841,7 +867,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private class CountDown extends CountDownTimer {
 
-        Boolean canGoPrepareMode = false;
 
         public CountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -951,6 +976,7 @@ public class MainActivity extends AppCompatActivity implements
         // Timerのカウント周期で呼ばれる
         @Override
         public void onTick(long millisUntilFinished) {
+
             renewTimerInfo(millisUntilFinished);
 
             // System.out.println("おら！画面1の残り時間: " + millisUntilFinished);
