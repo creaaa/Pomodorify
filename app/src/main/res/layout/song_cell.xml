@@ -17,21 +17,21 @@
         android:id="@+id/songNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:text="dummy name"
-        android:textSize="28sp"
         android:layout_alignParentTop="true"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="12dp"
         android:layout_toEndOf="@+id/jacketImageView"
-        android:layout_marginTop="12dp" />
+        android:text="dummy name"
+        android:textSize="22sp" />
 
     <TextView
         android:id="@+id/artistNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="dummy artist"
-        android:textSize="18sp"
         android:layout_alignBottom="@+id/jacketImageView"
-        android:layout_alignStart="@+id/songNameTextView" />
+        android:layout_alignStart="@+id/songNameTextView"
+        android:text="dummy artist"
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/previewButton"

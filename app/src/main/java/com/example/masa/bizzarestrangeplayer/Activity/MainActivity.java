@@ -145,24 +145,8 @@ public class MainActivity extends AppCompatActivity implements
 
             return;
 
-        } else {
-            System.out.println("ええ？？ないの！？");
         }
 
-
-        // TODO: 設定画面からの復帰でもここが発動してしまう。遷移元に応じて場合分けが必要。
-        // これでいいのか！？
-        if (currentSet == 1) {
-
-            // タイマーを再セット。Standby状態だし支障ない、そうに違いない
-            workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
-            breakTime = Long.valueOf(pref.getString("break_time", "10000"));
-            prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
-            MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
-
-            renewViews(workoutTime);
-
-        }
 
         // 最後のセットで、SetListResultActivityから復帰してここが通ると、
         // timer stringが空なので、formatができず、落ちる。
@@ -321,7 +305,6 @@ public class MainActivity extends AppCompatActivity implements
 
                     System.out.println("くるよな！そりゃそうよな！");
 
-                    // TODO: ここに回避処理
                     if (currentSet >= MAX_TIMES) {
                         System.out.println("よかよか、きとる");
                         System.out.println("状態: " + state);
@@ -345,7 +328,6 @@ public class MainActivity extends AppCompatActivity implements
         });
 
 
-        // TODO: 最初はcancelButtonは非表示に。でないとnullぽで落ちる
         cancelButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -584,11 +566,19 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
+
+        // 設定フラグメント画面から復帰時の処理
         if (requestCode == 777) {
 
-            System.out.println("まじか。くるんか。");
+            System.out.println("設定画面からの復帰");
 
-            // TODO: ここに各種タイマーインターバルの再設定、ビューの更新処理を書く
+            // タイマーを再セット。Standby状態だし支障ない、そうに違いない
+            workoutTime = Long.valueOf(pref.getString("workout_time", "5000"));
+            breakTime = Long.valueOf(pref.getString("break_time", "10000"));
+            prepareTime = Long.valueOf(pref.getString("prepare_time", "5000"));
+            MAX_TIMES = Integer.parseInt(pref.getString("set", "4"));
+
+            renewViews(workoutTime);
 
         }
 
@@ -732,29 +722,8 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onDestroy() {
-
-
-        System.out.println("きとるな");
-
         // VERY IMPORTANT! This must always be called or else you will leak resources
         Spotify.destroyPlayer(this);
-
-        //FIXME: これ書かないとどうなるか？
-        // たぶん、タイマーは生きたままになって回り続けてる。、
-        // そのため、一見、アプリ立ち上げてなくてもonFinishが勝手に起動してしまう。
-        // し、ビューに反映されてないから、おかしく感じる。
-
-
-
-        // ここやりすぎか、なぜなら再起動した時に、タイマーも消えてしまうから
-//        if (countDown != null) {
-//            System.out.println("やった♪消滅");
-//            countDown.cancel();
-//        }
-
-        // とりあえず、stopで判断を留保しよう
-        // てかこれそもそもondestroyにかいちゃだめや、これ
-        //countDown.cancel();
 
         super.onDestroy();
     }
@@ -807,9 +776,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private class CountDown extends CountDownTimer {
 
-
         Boolean canGoPrepareMode = false;
-
 
         public CountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -965,7 +932,7 @@ public class MainActivity extends AppCompatActivity implements
                     //"seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
                     //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
                     //"min_instrumentalness=0.8&" +
-                    //"market=JP&" +
+                    "market=JP&" +
                     "limit=15");
 
 
