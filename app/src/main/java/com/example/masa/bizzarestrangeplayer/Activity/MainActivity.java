@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.masa.bizzarestrangeplayer.Fragment.ResetDialogFragment;
@@ -255,11 +254,27 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
 
-                Toast.makeText(getApplicationContext(), "hoge", Toast.LENGTH_SHORT).show();
-                _handler.postDelayed(this, 5000);  // 何秒ごとに実行するか
+                // Toast.makeText(getApplicationContext(), "hoge", Toast.LENGTH_SHORT).show();
+
+                if (mPlayer == null) {
+                    return;
+                }
+
+                // ここでもnullチェックいる
+
+                double t = mPlayer.getMetadata().currentTrack.durationMs;
+                double c = mPlayer.getPlaybackState().positionMs;
+
+                double result = c / t * 100.0;
+
+                System.out.println(result);
+
+                musicSeekBar.setProgress((int)result);
+
+                _handler.postDelayed(this, 1000);  // 何秒ごとに実行するか
 
             }
-        }, 10000); // 最初に何秒遅延させるか
+        }, 20000); // 最初に何秒遅延させるか
 
 
         // キャンセルしたいときはこーする
