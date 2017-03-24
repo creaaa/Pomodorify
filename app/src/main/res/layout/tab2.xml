@@ -23,13 +23,13 @@
     <ImageView
         android:id="@+id/jacketImageView"
         android:layout_width="match_parent"
-        android:layout_height="380px"
-        android:layout_below="@+id/nowMusicTextView"
-        android:layout_alignParentStart="true" />
+        android:layout_height="360px"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/nowMusicTextView" />
 
 
     <SeekBar
-        android:id="@+id/seekBar"
+        android:id="@+id/musicSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/previousSongButton"
@@ -62,7 +62,8 @@
         android:id="@+id/musicPauseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/seekBar"
+        android:layout_alignBaseline="@+id/previousSongButton"
+        android:layout_alignBottom="@+id/previousSongButton"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

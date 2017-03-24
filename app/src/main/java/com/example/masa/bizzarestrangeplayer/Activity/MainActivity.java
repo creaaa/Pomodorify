@@ -22,8 +22,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.masa.bizzarestrangeplayer.Fragment.ResetDialogFragment;
@@ -157,6 +159,7 @@ public class MainActivity extends AppCompatActivity
 
     /* UI Tab2 */
 
+    SeekBar musicSeekBar;
     Button previousSongButton;
     Button nextSongButton;
     ToggleButton musicPauseButton;
@@ -182,6 +185,9 @@ public class MainActivity extends AppCompatActivity
     /* Launch Activity */
     private final int LAUNCH_SETLIST_RESULT = 1;
     private final int LAUNCH_PREF = 2;
+
+
+    Handler _handler = new Handler();
 
 
     @Override
@@ -244,6 +250,26 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+        _handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                Toast.makeText(getApplicationContext(), "hoge", Toast.LENGTH_SHORT).show();
+                _handler.postDelayed(this, 5000);  // 何秒ごとに実行するか
+
+            }
+        }, 10000); // 最初に何秒遅延させるか
+
+
+        // キャンセルしたいときはこーする
+        // _handler.removeCallbacksAndMessages(null);
+
+
+
+
+
+
         /* 00. Tabhost Initialize */
 
         // Tabhostを有効化
@@ -295,7 +321,7 @@ public class MainActivity extends AppCompatActivity
 
         /* 1. Auth Process */
 
-        // doAuth();
+         doAuth();
 
 
         /* 2. prepare Preference and initialize user's interval setting */
@@ -389,7 +415,6 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
 
 
-
                 DialogFragment dialog = new ResetDialogFragment();
                 dialog.show(getFragmentManager(), "dialog_basic");
 
@@ -412,6 +437,40 @@ public class MainActivity extends AppCompatActivity
 
 
         /* Music Player Tab Event Listener */
+
+
+        musicSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                System.out.println("バー: " + progress);
+
+                if (mPlayer == null) {
+                    return;
+                }
+
+                int time = currentSetPlaylist.get(playlistHead).getDurationMs();
+                time = time * progress / 100;
+                mPlayer.seekToPosition(null, time);
+
+
+                long ms = mPlayer.getPlaybackState().positionMs;
+                System.out.println(ms);
+                System.out.println(mPlayer.getMetadata().currentTrack.name);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
         previousSongButton.setOnClickListener(new View.OnClickListener() {
 
@@ -895,8 +954,8 @@ public class MainActivity extends AppCompatActivity
         try {
             //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
             URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-                    "seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
-                    //"seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
+                    //"seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
+                    "seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
                     //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
                     //"min_instrumentalness=0.8&" +
                     "market=JP&" +
@@ -1204,6 +1263,7 @@ public class MainActivity extends AppCompatActivity
         timerStateToggleButton = (ToggleButton) findViewById(R.id.timerStateToggleButton);
 
 
+        musicSeekBar       = (SeekBar) findViewById(R.id.musicSeekBar);
         previousSongButton = (Button) findViewById(R.id.previousSongButton);
         nextSongButton     = (Button) findViewById(R.id.nextSongButton);
         musicPauseButton   = (ToggleButton) findViewById(R.id.musicPauseButton);
