@@ -64,8 +64,60 @@ import okhttp3.Response;
 
 // TODO: isTimerActiveは一部しか書いてないよ！！いま！　だからそれに依存した実装を書くな
 
-public class MainActivity extends AppCompatActivity implements
-        SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+public class MainActivity extends AppCompatActivity
+        implements SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+
+
+//
+
+
+//    public class MyActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
+//
+//        // running activity count
+//        private int running = 0;
+//
+//        @Override
+//        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityStarted(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityResumed(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityPaused(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityStopped(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityDestroyed(Activity activity) {
+//
+//        }
+//    }
+
+
+
+
+
+
+
 
 
     private final String TAG = "深刻なバグ";
@@ -160,6 +212,8 @@ public class MainActivity extends AppCompatActivity implements
 //            return;
 //        }
 
+
+
         // TODO: タイマー再開処理
 
 
@@ -187,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
 
         /* 00. Tabhost Initialize */
@@ -332,6 +387,8 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public void onClick(View v) {
+
+
 
                 DialogFragment dialog = new ResetDialogFragment();
                 dialog.show(getFragmentManager(), "dialog_basic");
@@ -744,7 +801,10 @@ public class MainActivity extends AppCompatActivity implements
                     renewViews(prepareTime);
 
                     // mPlayer.pause(null);
-                        pause();
+
+
+                    // タイマーサイクル中、音楽を止めているところはここ！
+                    pause();
 
 
                     break;

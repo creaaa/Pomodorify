@@ -24,10 +24,17 @@
         android:id="@+id/jacketImageView"
         android:layout_width="match_parent"
         android:layout_height="380px"
-        android:layout_alignParentStart="true"
         android:layout_below="@+id/nowMusicTextView"
-        android:layout_above="@+id/previousSongButton" />
+        android:layout_alignParentStart="true" />
 
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/previousSongButton"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="16dp" />
 
     <Button
         android:id="@+id/previousSongButton"
@@ -55,7 +62,7 @@
         android:id="@+id/musicPauseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/jacketImageView"
+        android:layout_below="@+id/seekBar"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
