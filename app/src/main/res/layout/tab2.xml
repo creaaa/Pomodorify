@@ -51,12 +51,10 @@
         android:background="@android:drawable/ic_media_next"
         android:backgroundTint="@color/background_black" />
 
-    <Button
+    <ToggleButton
         android:id="@+id/musicPauseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:drawable/ic_media_pause"
-        android:backgroundTint="@color/background_black"
         android:layout_below="@+id/jacketImageView"
         android:layout_centerHorizontal="true" />
 

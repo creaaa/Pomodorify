@@ -132,14 +132,13 @@ public class MainActivity extends AppCompatActivity implements
     private final int LAUNCH_PREF = 2;
 
 
-
     @Override
     protected void onRestart() {
 
         super.onRestart();
 
         System.out.println("リスタートｗ");
-//
+
 //        // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
 //        // とりま動いてるけど...。
 //
@@ -160,6 +159,9 @@ public class MainActivity extends AppCompatActivity implements
 //        if (timerTextView.getText().toString().equals("")) {
 //            return;
 //        }
+
+        // TODO: タイマー再開処理
+
 
     }
     
@@ -348,29 +350,45 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
+        /* Music Player Tab Event Listener */
+
         previousSongButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (playlistHead != 0) {
-                    playlistHead -= 1;
+                System.out.println("現在のHEAD: " + playlistHead);
+
+                if (playlistHead == 0) {
+                    return;
                 }
 
-                mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                playlistHead -= 1;
+
+                // mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                play();
+
                 renewMusicInfo();
             }
         });
+
 
         nextSongButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                System.out.println("現在のHEAD: " + playlistHead);
+
+                if (playlistHead >= currentSetPlaylist.size() - 1) {
+                    return;
+                }
+
                 // 俺はこれを実質使ってない(てゆうかわからない)
                 // mPlayer.skipToNext(null);
+
                 playlistHead += 1;
 
-                // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
-                mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                play();
+
                 renewMusicInfo();
             }
         });
@@ -379,166 +397,15 @@ public class MainActivity extends AppCompatActivity implements
         musicPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPlayer.pause(null);
+
+                // mPlayer.pause(null);
+                pause();
+
             }
         });
 
     }
 
-
-
-
-
-//    public void connectMusicAnalyzeAndParse() {
-//
-//        System.out.println("押されてる");
-//
-//        try {
-//            // これはできる 3JIxjvbbDrA9ztYlNcp3yL
-//            // スーパーカー 3p4ELetqoTwFpsnUkEirzc
-//            // ダンシング・クイーン 01iyCAUm8EvOFqVWYJ3dVX
-//            String songID = musicIDs[new Random().nextInt(3)];
-//
-//            URL url = new URL("https://api.spotify.com/v1/audio-analysis/" + songID);
-//
-//            final Request request = new Request.Builder()
-//                    // URLを生成
-//                    .url(url.toString())
-//                    .get()
-//                    .addHeader("Authorization","Bearer " + mAccessToken)
-//                    .build();
-//
-//
-//            // クライアントオブジェクトを作成する
-//            final OkHttpClient client = new OkHttpClient();
-//            // 新しいリクエストを行う
-//            client.newCall(request).enqueue(new Callback() {
-//                // 通信が成功した時
-//                @Override
-//                public void onResponse(Call call, Response response) throws IOException {
-//
-//                    // 通信結果をログに出力する
-//                    final String responseBody = response.body().string();
-//                    //
-//                    Log.d("OKHttp", responseBody);
-//                }
-//
-//                // 通信が失敗した時
-//                @Override
-//                public void onFailure(Call call, final IOException e) {
-//                    // new Handler().post って書いてたから、
-//                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
-//                    // で落ちてた？？？
-//                    handler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            Log.d("OKHttp", "エラー♪");
-//                        }
-//                    });
-//                }
-//            });
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-
-    public void connectTrackJsonAndParse() {
-
-        new AsyncTask<Void, String, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                // URLオブジェクト生成
-                URL url = null;
-                String serverUrl = "https://api.spotify.com/v1/artists/43ZHCT0cAZBISjO8DG9PnE/top-tracks?country=JP";
-
-                try {
-                    url = new URL(serverUrl);
-                    // サーバーへのネットワーク接続
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.connect();
-                    // UTF-8で読み込む
-                    InputStreamReader is = new InputStreamReader(connection.getInputStream(), "UTF-8");
-                    // GsonライブラリのJSONリーダー（パーサー）
-                    JsonReader jsonReader = new JsonReader(is);
-                    // Gson生成
-                    Gson gson = new Gson();
-                    // fromJsonメソッドでJSONからJavaオブジェクトへの変換
-                    TrackModel data = gson.fromJson(jsonReader, TrackModel.class);
-
-                    System.out.println(data.getTracks().get(0).getName());
-                    System.out.println(data.getTracks().get(0).getPopularity());
-                    System.out.println(data.getTracks().get(0).getAvailableMarkets());
-
-                    List<TrackModel.Track> tracks = data.getTracks();
-
-
-                    for (TrackModel.Track track: tracks) {
-                        System.out.println(track.getName());
-                    }
-
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-        }.execute();
-    }
-
-    public void connectArtistJsonAndParse() {
-
-        try {
-            URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
-
-            final Request request = new Request.Builder()
-                    // URLを生成
-                    .url(url.toString())
-                    .get()
-                    .addHeader("Authorization","Bearer " + mAccessToken)
-                    .build();
-
-
-            // クライアントオブジェクトを作成する
-            final OkHttpClient client = new OkHttpClient();
-            // 新しいリクエストを行う
-            client.newCall(request).enqueue(new Callback() {
-                // 通信が成功した時
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-
-                    // 通信結果をログに出力する
-                    final String responseBody = response.body().string();
-
-                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
-                    Log.d("OKHttp", "result: " + responseBody);
-
-                    final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
-
-                    System.out.println(result.getArtists().getItems().get(0).getName());
-                }
-
-                // 通信が失敗した時
-                @Override
-                public void onFailure(Call call, final IOException e) {
-                    new Handler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            System.out.println("エラー♪");
-                        }
-                    });
-                }
-            });
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -565,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements
                 Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
 
                 Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
+
                     @Override
                     public void onInitialized(SpotifyPlayer spotifyPlayer) {
                         mPlayer = spotifyPlayer;
@@ -827,7 +695,7 @@ public class MainActivity extends AppCompatActivity implements
                         countDown.cancel();
 
                         timerTextView.setText("");
-                        // ここで、onSetCheckedが走ってしまうので、onSetCheckedに回避処理を書いている
+                        // ここで、onSetChecked が走ってしまうので、onSetCheckedに回避処理を書いている
                         timerStateToggleButton.setChecked(false);
 
 
@@ -870,9 +738,9 @@ public class MainActivity extends AppCompatActivity implements
 
                     renewViews(prepareTime);
 
-                    if (mPlayer != null) {
-                        mPlayer.pause(null);
-                    }
+                    // mPlayer.pause(null);
+                        pause();
+
 
                     break;
 
@@ -984,6 +852,7 @@ public class MainActivity extends AppCompatActivity implements
 
             // 新しいリクエストを行う
             client.newCall(request).enqueue(new Callback() {
+
                 // 通信が成功した時
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
@@ -999,6 +868,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     // 前の設定を空に
                     currentSetPlaylist = new ArrayList<>();
+                    playlistHead       = 0;
 
 
                     long currentTotalDuration = 0;
@@ -1058,12 +928,177 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        //mPlayer.skipToNext(null);
-        // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
-        mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+        play();
 
     }
 
+    private void play() {
+        if (mPlayer != null) {
+            // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
+            mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+        }
+    }
+
+    private void pause() {
+        if (mPlayer == null) {
+            return;
+        }
+        mPlayer.pause(null);
+    }
+
+
+
+
+    //    public void connectMusicAnalyzeAndParse() {
+//
+//        System.out.println("押されてる");
+//
+//        try {
+//            // これはできる 3JIxjvbbDrA9ztYlNcp3yL
+//            // スーパーカー 3p4ELetqoTwFpsnUkEirzc
+//            // ダンシング・クイーン 01iyCAUm8EvOFqVWYJ3dVX
+//            String songID = musicIDs[new Random().nextInt(3)];
+//
+//            URL url = new URL("https://api.spotify.com/v1/audio-analysis/" + songID);
+//
+//            final Request request = new Request.Builder()
+//                    // URLを生成
+//                    .url(url.toString())
+//                    .get()
+//                    .addHeader("Authorization","Bearer " + mAccessToken)
+//                    .build();
+//
+//
+//            // クライアントオブジェクトを作成する
+//            final OkHttpClient client = new OkHttpClient();
+//            // 新しいリクエストを行う
+//            client.newCall(request).enqueue(new Callback() {
+//                // 通信が成功した時
+//                @Override
+//                public void onResponse(Call call, Response response) throws IOException {
+//
+//                    // 通信結果をログに出力する
+//                    final String responseBody = response.body().string();
+//                    //
+//                    Log.d("OKHttp", responseBody);
+//                }
+//
+//                // 通信が失敗した時
+//                @Override
+//                public void onFailure(Call call, final IOException e) {
+//                    // new Handler().post って書いてたから、
+//                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
+//                    // で落ちてた？？？
+//                    handler.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Log.d("OKHttp", "エラー♪");
+//                        }
+//                    });
+//                }
+//            });
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+
+    public void connectTrackJsonAndParse() {
+
+        new AsyncTask<Void, String, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                // URLオブジェクト生成
+                URL url = null;
+                String serverUrl = "https://api.spotify.com/v1/artists/43ZHCT0cAZBISjO8DG9PnE/top-tracks?country=JP";
+
+                try {
+                    url = new URL(serverUrl);
+                    // サーバーへのネットワーク接続
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+                    // UTF-8で読み込む
+                    InputStreamReader is = new InputStreamReader(connection.getInputStream(), "UTF-8");
+                    // GsonライブラリのJSONリーダー（パーサー）
+                    JsonReader jsonReader = new JsonReader(is);
+                    // Gson生成
+                    Gson gson = new Gson();
+                    // fromJsonメソッドでJSONからJavaオブジェクトへの変換
+                    TrackModel data = gson.fromJson(jsonReader, TrackModel.class);
+
+                    System.out.println(data.getTracks().get(0).getName());
+                    System.out.println(data.getTracks().get(0).getPopularity());
+                    System.out.println(data.getTracks().get(0).getAvailableMarkets());
+
+                    List<TrackModel.Track> tracks = data.getTracks();
+
+
+                    for (TrackModel.Track track: tracks) {
+                        System.out.println(track.getName());
+                    }
+
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        }.execute();
+    }
+
+    public void connectArtistJsonAndParse() {
+
+        try {
+            URL url = new URL("https://api.spotify.com/v1/search?q=passepied&type=artist");
+
+            final Request request = new Request.Builder()
+                    // URLを生成
+                    .url(url.toString())
+                    .get()
+                    .addHeader("Authorization","Bearer " + mAccessToken)
+                    .build();
+
+
+            // クライアントオブジェクトを作成する
+            final OkHttpClient client = new OkHttpClient();
+            // 新しいリクエストを行う
+            client.newCall(request).enqueue(new Callback() {
+                // 通信が成功した時
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    // 通信結果をログに出力する
+                    final String responseBody = response.body().string();
+
+                    // パスピエのアーティストID: 115IWAVy4OTxhE0xdDef1c
+                    Log.d("OKHttp", "result: " + responseBody);
+
+                    final ArtistModel result = new Gson().fromJson(responseBody, ArtistModel.class);
+
+                    System.out.println(result.getArtists().getItems().get(0).getName());
+                }
+
+                // 通信が失敗した時
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("エラー♪");
+                        }
+                    });
+                }
+            });
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
