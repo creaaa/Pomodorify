@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements
 
     Button previousSongButton;
     Button nextSongButton;
-    Button musicPauseButton;
+    ToggleButton musicPauseButton;
 
 
     /* Timer setting class */
@@ -278,6 +278,10 @@ public class MainActivity extends AppCompatActivity implements
                         countDown = new CountDown(prepareTime, 1000);
                         countDown.start();
 
+
+                        currentSet = 1;
+
+
                         renewViews(prepareTime);
 
                         timerStateToggleButton.setVisibility(View.INVISIBLE);
@@ -353,6 +357,7 @@ public class MainActivity extends AppCompatActivity implements
         /* Music Player Tab Event Listener */
 
         previousSongButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
 
@@ -394,25 +399,25 @@ public class MainActivity extends AppCompatActivity implements
         });
 
 
-        musicPauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                // mPlayer.pause(null);
-                pause();
+        musicPauseButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+                    pause();
+                } else {
+                    resume();
+                }
 
             }
         });
-
     }
 
 
 
-
-
-
     /* callback method */
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -932,6 +937,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+
     private void play() {
         if (mPlayer != null) {
             // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
@@ -939,7 +945,9 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+
     private void pause() {
+
         if (mPlayer == null) {
             return;
         }
@@ -947,6 +955,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    private void resume() {
+
+        if (mPlayer == null) {
+            return;
+        }
+        mPlayer.resume(null);
+    }
 
 
     //    public void connectMusicAnalyzeAndParse() {
@@ -1131,7 +1146,7 @@ public class MainActivity extends AppCompatActivity implements
 
         previousSongButton = (Button) findViewById(R.id.previousSongButton);
         nextSongButton     = (Button) findViewById(R.id.nextSongButton);
-        musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
+        musicPauseButton   = (ToggleButton) findViewById(R.id.musicPauseButton);
 
     }
 
