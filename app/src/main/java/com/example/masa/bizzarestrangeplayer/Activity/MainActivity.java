@@ -62,6 +62,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
+// TODO: isTimerActiveは一部しか書いてないよ！！いま！　だからそれに依存した実装を書くな
+
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements
     TextView nowMusicTextView;
     TextView timerTextView;
     Button cancelButton;
-    ToggleButton playerToggleButton;
+    ToggleButton timerStateToggleButton;
 
 
     /* UI Tab2 */
@@ -137,65 +139,34 @@ public class MainActivity extends AppCompatActivity implements
         super.onRestart();
 
         System.out.println("リスタートｗ");
-
-
-        // TODO: ここが怪しい！！！やっぱそうだった！！！！！！
-        // FIXME: その場しのぎの修正！！！！ロジック考えてなんとかしろ
-        // てかこんなのボタンおしたときにやらせればええわ
-
-
-
-//        if (currentSet > MAX_TIMES) {
-//            System.out.println("あぶないとこやで。");
 //
-//            currentSet = 1;
-//            renewSetInfo();
+//        // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
+//        // とりま動いてるけど...。
 //
+//
+//        // 設定画面から復帰したときは、↓のタイマーを走らせる処理をしたくないため、早期リターン
+//        if (state == TimerState.Standby) {
 //            return;
 //        }
-
-
-
-
-
-        // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
-        // とりま動いてるけど...。
-
-
-        // 設定画面から復帰したときは、↓のタイマーを走らせる処理をしたくないため、早期リターン
-        if (state == TimerState.Standby) {
-            return;
-        }
-
-
-        // 3/22 23:00 これかかないとだめ！！
-
-
-        if (state == TimerState.Break) {
-            renewTimerStateInfo(state);
-            return;
-        }
-
-
-        // FIXME: これないと落ちるが汚い。なんとかしろ。
-        if (timerTextView.getText().toString().equals("")) {
-            return;
-        }
-
-
-        // mission controlからの復帰時、タイマーを再開
-    // TODO: ここじょうぜつ！！！！！！！！！やばい！！
-
-
-
-        //kusoTimerReset();
+//
+//        // 3/22 23:00 これかかないとだめ！！
+//        if (state == TimerState.Break) {
+//            renewTimerStateInfo(state);
+//            return;
+//        }
+//
+//
+//        // FIXME: これないと落ちるが汚い。なんとかしろ。
+//        if (timerTextView.getText().toString().equals("")) {
+//            return;
+//        }
 
     }
     
     
-    private void kusoTimerReset() {
+    private void timerReset() {
 
-        Log.d(TAG, "kusoTimerReset:");
+        Log.d(TAG, "timerReset:");
         
         String[] tmp = (timerTextView.getText().toString()).split(":", 0);
 
@@ -217,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements
 
 
         /* 00. Tabhost Initialize */
-
 
         // Tabhostを有効化
         TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
@@ -244,19 +214,22 @@ public class MainActivity extends AppCompatActivity implements
 
 
         /* 0. prepare timerRemoteStopHandler */
+
         timerRemoteStopHandler = new Handler() {
 
             @Override
             public void handleMessage(Message msg) {
+
                 switch (msg.what) {
+
                     case 100:
                         System.out.println("タイマーストップ！！！");
-                        if (countDown != null) {
-                            Log.d(TAG, "はいとおったー1");
-                            countDown.cancel();
-                            isTimerActive= false;
 
+                        if (countDown != null) {
+                            countDown.cancel();
+                            isTimerActive = false;
                         }
+
                         break;
                 }
             }
@@ -271,37 +244,12 @@ public class MainActivity extends AppCompatActivity implements
         /* 2. prepare Preference and initialize user's interval setting */
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
-
-        setAllTimeSetting();
+        setAllTimerSetting();
 
 
         /* 3. UI componet initialize */
 
-        jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
-
-        loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
-        loginStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-        setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
-
-        timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
-        timerStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-        nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
-        nowMusicTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-        timerTextView      = (TextView) findViewById(R.id.timerTextView);
-        timerTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-
-        cancelButton       = (Button) findViewById(R.id.cancelButton);
-        playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
-
-
-        previousSongButton = (Button) findViewById(R.id.previousSongButton);
-        nextSongButton     = (Button) findViewById(R.id.nextSongButton);
-        musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
-
+        initializeViewComponents();
 
         // addFilterToImageView();
 
@@ -311,13 +259,13 @@ public class MainActivity extends AppCompatActivity implements
 
         /* 4. set event listener */
 
-        playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        timerStateToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                Log.d(TAG, "onCheckedChanged: ここかよ！");
 
+                // OFF→ONになった瞬間
                 if (isChecked) {
 
                     // 1セットめを開始
@@ -330,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements
 
                         renewViews(prepareTime);
 
-                        playerToggleButton.setVisibility(View.INVISIBLE);
+                        timerStateToggleButton.setVisibility(View.INVISIBLE);
 
                         // 3/22 18:00 追加
                         invalidateOptionsMenu();
@@ -340,17 +288,17 @@ public class MainActivity extends AppCompatActivity implements
 
 
                     // 一時停止中(state: Pause)のとき、タイマーを再開
-                    kusoTimerReset();
+                    timerReset();
 
                     // renewTimerStateInfo(TimerState.Workout);
 
                     renewViews(workoutTime);
 
 
-                } else {  // 再生中のとき、一時停止する
+
+                } else { // ON→OFFになった瞬間 (再生中のとき、一時停止する)
 
                     if (currentSet >= MAX_TIMES) {
-                        System.out.println("状態: " + state);
                         return;
                     }
 
@@ -382,16 +330,15 @@ public class MainActivity extends AppCompatActivity implements
                 DialogFragment dialog = new ResetDialogFragment();
                 dialog.show(getFragmentManager(), "dialog_basic");
 
-//                if(countDown != null) {
-                    Log.d(TAG, "はいとおったー3");
+                Log.d(TAG, "はいとおったー3");
                     countDown.cancel();
-//                }
+//              }
 
                 state = TimerState.Standby;
                 currentSet = 1;
 
-                playerToggleButton.setVisibility(View.VISIBLE);
-                playerToggleButton.setChecked(false);  // まさかここで、onCheckedChange が呼ばれてる？→合ってた
+                timerStateToggleButton.setVisibility(View.VISIBLE);
+                timerStateToggleButton.setChecked(false);  // まさかここで、onCheckedChange が呼ばれてる？→合ってた
 
                 invalidateOptionsMenu();
                 renewViews(workoutTime);
@@ -437,6 +384,9 @@ public class MainActivity extends AppCompatActivity implements
         });
 
     }
+
+
+
 
 
 //    public void connectMusicAnalyzeAndParse() {
@@ -592,22 +542,6 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-    private void addFilterToImageView() {
-
-        float brightness = -125;
-
-        ColorMatrix cmx = new ColorMatrix(new float[] {
-
-                1, 0, 0, 0, brightness
-                , 0, 1, 0, 0, brightness
-                , 0, 0, 1, 0, brightness
-                , 0, 0, 0, 1, 0 });
-
-        jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
-        jacketImageView.setAlpha(0.8f);
-
-    }
-
 
 
     /* callback method */
@@ -650,12 +584,9 @@ public class MainActivity extends AppCompatActivity implements
         }
 
 
-        // TODO 怪しい1
         else if (requestCode == LAUNCH_SETLIST_RESULT) {
 
             System.out.println("セトリ画面からの復帰");
-
-
 
             // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
             if (timerTextView.getText().toString().equals("")) {
@@ -665,27 +596,13 @@ public class MainActivity extends AppCompatActivity implements
             // これ、いれるか、いれないか、わかれる
             // いれると自然。だが、ノータッチで勝手にfinishしたときにバグっていく。
             // 制御できないと思ったら、ここをコメントアウトしろ
-
-            // TODO: kusoTimerReset
+            // TODO: timerReset
 
             if (isTimerActive == false) {
-                kusoTimerReset();
+                timerReset();
             } else {
                 System.out.println("華麗に回避");
             }
-
-
-
-
-            // ここ書いててまじひどい目あった。てかなんだこのコード
-
-//            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
-//
-//            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-//            int second = Integer.parseInt(tmp[1]) * 1000;
-//            countDown = new CountDown(minute + second, 1000);
-//            countDown.start();
-
         }
 
 
@@ -693,25 +610,12 @@ public class MainActivity extends AppCompatActivity implements
         else if (requestCode == LAUNCH_PREF) {
 
             System.out.println("設定画面からの復帰");
-
-            System.out.println("状態: " + state);
-
-            setAllTimeSetting();
-
+            setAllTimerSetting();
             renewViews(workoutTime);
-
         }
 
     }
 
-    private void setAllTimeSetting() {
-
-        workoutTime = Long.valueOf(pref.getString("workout_time", "9000"));
-        breakTime   = Long.valueOf(pref.getString("break_time", "9000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "9000"));
-        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
-
-    }
 
 
     // onPlaybackEventの直後に来ます
@@ -802,8 +706,6 @@ public class MainActivity extends AppCompatActivity implements
                 break;
         }
     }
-
-
 
 
 
@@ -900,6 +802,7 @@ public class MainActivity extends AppCompatActivity implements
 
     Boolean isTimerActive = false;
 
+
     private class CountDown extends CountDownTimer {
 
 
@@ -917,26 +820,18 @@ public class MainActivity extends AppCompatActivity implements
 
                     if (currentSet >= MAX_TIMES) {
 
-                        Log.d(TAG, "maxのほう");
-
-                        // 3/22 18:00 追加
                         invalidateOptionsMenu();
 
                         state = TimerState.Standby;
-                        System.out.println("状態: " + state);
 
-//                      if(countDown != null) {
-                        Log.d(TAG, "はいとおったー5");
                         countDown.cancel();
-//                      }
-
 
                         timerTextView.setText("");
                         // ここで、onSetCheckedが走ってしまうので、onSetCheckedに回避処理を書いている
-                        playerToggleButton.setChecked(false);
+                        timerStateToggleButton.setChecked(false);
 
 
-                        playerToggleButton.setVisibility(View.VISIBLE);
+                        timerStateToggleButton.setVisibility(View.VISIBLE);
                         cancelButton.setVisibility(View.INVISIBLE);
 
                         renewTimerStateInfo(state);
@@ -953,7 +848,7 @@ public class MainActivity extends AppCompatActivity implements
                     countDown = new CountDown(breakTime, 1000);
                     countDown.start();
 
-                    playerToggleButton.setVisibility(View.INVISIBLE);
+                    timerStateToggleButton.setVisibility(View.INVISIBLE);
                     renewViews(breakTime);
 
                     launchSetListActivity();
@@ -971,7 +866,6 @@ public class MainActivity extends AppCompatActivity implements
 
                     countDown.start();
 
-                    // TODO: ここも超絶怪しい
                     increaseCurrentSet();
 
                     renewViews(prepareTime);
@@ -988,7 +882,7 @@ public class MainActivity extends AppCompatActivity implements
                     countDown = new CountDown(workoutTime, 1000);
                     countDown.start();
 
-                    playerToggleButton.setVisibility(View.VISIBLE);
+                    timerStateToggleButton.setVisibility(View.VISIBLE);
                     cancelButton.setVisibility(View.VISIBLE);
 
                     renewViews(workoutTime);
@@ -1006,10 +900,8 @@ public class MainActivity extends AppCompatActivity implements
         public void onTick(long millisUntilFinished) {
 
             isTimerActive = true;
-
             renewTimerInfo(millisUntilFinished);
 
-            // System.out.println("おら！画面1の残り時間: " + millisUntilFinished);
         }
     }
 
@@ -1030,10 +922,21 @@ public class MainActivity extends AppCompatActivity implements
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
+    }
+
+
+    private void setAllTimerSetting() {
+
+        workoutTime = Long.valueOf(pref.getString("workout_time", "9000"));
+        breakTime   = Long.valueOf(pref.getString("break_time", "9000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "9000"));
+        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
 
     }
 
+
     private void increaseCurrentSet() { currentSet += 1; }
+
 
     private void launchSetListActivity() {
 
@@ -1115,7 +1018,6 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     }
 
-
                     if (mAccessToken != null && !currentSetPlaylist.isEmpty()) {
                         playMusic();
                     }
@@ -1163,7 +1065,58 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+
+
     /* renew UI */
+
+
+    private void initializeViewComponents() {
+
+
+        jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
+
+        loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
+        loginStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+        setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
+
+        timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
+        timerStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+        nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
+        nowMusicTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+        timerTextView      = (TextView) findViewById(R.id.timerTextView);
+        timerTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+
+        cancelButton       = (Button) findViewById(R.id.cancelButton);
+        timerStateToggleButton = (ToggleButton) findViewById(R.id.timerStateToggleButton);
+
+
+        previousSongButton = (Button) findViewById(R.id.previousSongButton);
+        nextSongButton     = (Button) findViewById(R.id.nextSongButton);
+        musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
+
+    }
+
+
+    private void addFilterToImageView() {
+
+        float brightness = -125;
+
+        ColorMatrix cmx = new ColorMatrix(new float[] {
+
+                1, 0, 0, 0, brightness
+                , 0, 1, 0, 0, brightness
+                , 0, 0, 1, 0, brightness
+                , 0, 0, 0, 1, 0 });
+
+        jacketImageView.setColorFilter(new ColorMatrixColorFilter(cmx));
+        jacketImageView.setAlpha(0.8f);
+
+    }
+
 
     private void renewViews(Long kind_of_timer) {
         renewSetInfo();

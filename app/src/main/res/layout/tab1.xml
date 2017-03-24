@@ -65,15 +65,15 @@
     android:visibility="invisible" />
 
     <ToggleButton
-    android:id="@+id/playerToggleButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-        android:text="ToggleButton"
-    android:textOff="Start"
-    android:textOn="Stop"
+        android:id="@+id/timerStateToggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/cancelButton"
         android:layout_alignBottom="@+id/cancelButton"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="48dp" />
+        android:layout_marginEnd="48dp"
+        android:text="ToggleButton"
+        android:textOff="Start"
+        android:textOn="Stop" />
 
 </RelativeLayout>
