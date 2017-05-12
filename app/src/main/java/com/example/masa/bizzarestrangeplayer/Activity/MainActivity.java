@@ -248,8 +248,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 
-
-
         _handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -279,10 +277,6 @@ public class MainActivity extends AppCompatActivity
 
         // キャンセルしたいときはこーする
         // _handler.removeCallbacksAndMessages(null);
-
-
-
-
 
 
         /* 00. Tabhost Initialize */
@@ -460,6 +454,12 @@ public class MainActivity extends AppCompatActivity
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
                 System.out.println("バー: " + progress);
+
+
+                if (fromUser == false) {
+                    return;
+                }
+
 
                 if (mPlayer == null) {
                     return;
