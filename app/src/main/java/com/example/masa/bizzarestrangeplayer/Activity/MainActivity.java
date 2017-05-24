@@ -260,16 +260,24 @@ public class MainActivity extends AppCompatActivity
 
                 // ここでもnullチェックいる
 
-                double t = mPlayer.getMetadata().currentTrack.durationMs;
-                double c = mPlayer.getPlaybackState().positionMs;
+                double t;
+                double c;
 
-                double result = c / t * 100.0;
+                if (mPlayer.getMetadata() != null) {
 
-                System.out.println(result);
+                    t = mPlayer.getMetadata().currentTrack.durationMs;
+                    c = mPlayer.getPlaybackState().positionMs;
 
-                musicSeekBar.setProgress((int)result);
+                    double result = c / t * 100.0;
 
-                _handler.postDelayed(this, 1000);  // 何秒ごとに実行するか
+                    System.out.println(result);
+
+                    musicSeekBar.setProgress((int)result);
+
+                    _handler.postDelayed(this, 1000);  // 何秒ごとに実行するか
+                }
+
+
 
             }
         }, 20000); // 最初に何秒遅延させるか
