@@ -38,4 +38,31 @@
         />
 
     </PreferenceCategory>
+
+
+    <PreferenceCategory android:title="Playlist Tendency">
+
+        <SeekBarPreference
+            android:key="playlist_tendency_dancability"
+            android:title="Dancable"
+            android:summary="Summary."
+            android:max="5"
+            android:defaultValue="0" />
+
+        <SeekBarPreference
+            android:key="playlist_tendency_inst"
+            android:title="Instrumentalness"
+            android:summary="Summary."
+            android:max="5"
+            android:defaultValue="0" />
+
+        <SeekBarPreference
+            android:key="playlist_tendency_hoge"
+            android:title="hoge"
+            android:summary="Summary."
+            android:max="5"
+            android:defaultValue="0" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

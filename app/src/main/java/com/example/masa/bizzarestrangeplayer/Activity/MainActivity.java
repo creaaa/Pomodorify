@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -62,8 +63,62 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class MainActivity extends AppCompatActivity implements
-        SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+// TODO: isTimerActiveは一部しか書いてないよ！！いま！　だからそれに依存した実装を書くな
+
+public class MainActivity extends AppCompatActivity
+        implements SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+
+
+//
+
+
+//    public class MyActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
+//
+//        // running activity count
+//        private int running = 0;
+//
+//        @Override
+//        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityStarted(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityResumed(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityPaused(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityStopped(Activity activity) {
+//
+//        }
+//
+//        @Override
+//        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+//
+//        }
+//
+//        @Override
+//        public void onActivityDestroyed(Activity activity) {
+//
+//        }
+//    }
+
+
+
+
+
+
+
 
 
     private final String TAG = "深刻なバグ";
@@ -98,14 +153,15 @@ public class MainActivity extends AppCompatActivity implements
     TextView nowMusicTextView;
     TextView timerTextView;
     Button cancelButton;
-    ToggleButton playerToggleButton;
+    ToggleButton timerStateToggleButton;
 
 
     /* UI Tab2 */
 
+    SeekBar musicSeekBar;
     Button previousSongButton;
     Button nextSongButton;
-    Button musicPauseButton;
+    ToggleButton musicPauseButton;
 
 
     /* Timer setting class */
@@ -130,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements
     private final int LAUNCH_PREF = 2;
 
 
+    Handler _handler = new Handler();
+
 
     @Override
     protected void onRestart() {
@@ -138,64 +196,38 @@ public class MainActivity extends AppCompatActivity implements
 
         System.out.println("リスタートｗ");
 
-
-        // TODO: ここが怪しい！！！やっぱそうだった！！！！！！
-        // FIXME: その場しのぎの修正！！！！ロジック考えてなんとかしろ
-        // てかこんなのボタンおしたときにやらせればええわ
-
-
-
-//        if (currentSet > MAX_TIMES) {
-//            System.out.println("あぶないとこやで。");
+//        // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
+//        // とりま動いてるけど...。
 //
-//            currentSet = 1;
-//            renewSetInfo();
 //
+//        // 設定画面から復帰したときは、↓のタイマーを走らせる処理をしたくないため、早期リターン
+//        if (state == TimerState.Standby) {
+//            return;
+//        }
+//
+//        // 3/22 23:00 これかかないとだめ！！
+//        if (state == TimerState.Break) {
+//            renewTimerStateInfo(state);
+//            return;
+//        }
+//
+//
+//        // FIXME: これないと落ちるが汚い。なんとかしろ。
+//        if (timerTextView.getText().toString().equals("")) {
 //            return;
 //        }
 
 
 
+        // TODO: タイマー再開処理
 
-
-        // TODO: 「タイムアウトで」サブ画面から帰ってきた時は、ここに何の処理も書かなくていいのか？
-        // とりま動いてるけど...。
-
-
-        // 設定画面から復帰したときは、↓のタイマーを走らせる処理をしたくないため、早期リターン
-        if (state == TimerState.Standby) {
-            return;
-        }
-
-
-        // 3/22 23:00 これかかないとだめ！！
-
-
-        if (state == TimerState.Break) {
-            renewTimerStateInfo(state);
-            return;
-        }
-
-
-        // FIXME: これないと落ちるが汚い。なんとかしろ。
-        if (timerTextView.getText().toString().equals("")) {
-            return;
-        }
-
-
-        // mission controlからの復帰時、タイマーを再開
-    // TODO: ここじょうぜつ！！！！！！！！！やばい！！
-
-
-
-        //kusoTimerReset();
 
     }
     
     
-    private void kusoTimerReset() {
+    private void timerReset() {
 
-        Log.d(TAG, "kusoTimerReset:");
+        Log.d(TAG, "timerReset:");
         
         String[] tmp = (timerTextView.getText().toString()).split(":", 0);
 
@@ -216,8 +248,46 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-        /* 00. Tabhost Initialize */
+        _handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
 
+                // Toast.makeText(getApplicationContext(), "hoge", Toast.LENGTH_SHORT).show();
+
+                if (mPlayer == null) {
+                    return;
+                }
+
+                // ここでもnullチェックいる
+
+                double t;
+                double c;
+
+                if (mPlayer.getMetadata() != null) {
+
+                    t = mPlayer.getMetadata().currentTrack.durationMs;
+                    c = mPlayer.getPlaybackState().positionMs;
+
+                    double result = c / t * 100.0;
+
+                    System.out.println(result);
+
+                    musicSeekBar.setProgress((int)result);
+
+                    _handler.postDelayed(this, 1000);  // 何秒ごとに実行するか
+                }
+
+
+
+            }
+        }, 20000); // 最初に何秒遅延させるか
+
+
+        // キャンセルしたいときはこーする
+        // _handler.removeCallbacksAndMessages(null);
+
+
+        /* 00. Tabhost Initialize */
 
         // Tabhostを有効化
         TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
@@ -244,19 +314,22 @@ public class MainActivity extends AppCompatActivity implements
 
 
         /* 0. prepare timerRemoteStopHandler */
+
         timerRemoteStopHandler = new Handler() {
 
             @Override
             public void handleMessage(Message msg) {
+
                 switch (msg.what) {
+
                     case 100:
                         System.out.println("タイマーストップ！！！");
-                        if (countDown != null) {
-                            Log.d(TAG, "はいとおったー1");
-                            countDown.cancel();
-                            isTimerActive= false;
 
+                        if (countDown != null) {
+                            countDown.cancel();
+                            isTimerActive = false;
                         }
+
                         break;
                 }
             }
@@ -265,43 +338,18 @@ public class MainActivity extends AppCompatActivity implements
 
         /* 1. Auth Process */
 
-        // doAuth();
+         doAuth();
 
 
         /* 2. prepare Preference and initialize user's interval setting */
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
-
-        setAllTimeSetting();
+        setAllTimerSetting();
 
 
         /* 3. UI componet initialize */
 
-        jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
-
-        loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
-        loginStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-        setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
-
-        timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
-        timerStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-        nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
-        nowMusicTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-        timerTextView      = (TextView) findViewById(R.id.timerTextView);
-        timerTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
-
-
-        cancelButton       = (Button) findViewById(R.id.cancelButton);
-        playerToggleButton = (ToggleButton) findViewById(R.id.playerToggleButton);
-
-
-        previousSongButton = (Button) findViewById(R.id.previousSongButton);
-        nextSongButton     = (Button) findViewById(R.id.nextSongButton);
-        musicPauseButton   = (Button) findViewById(R.id.musicPauseButton);
-
+        initializeViewComponents();
 
         // addFilterToImageView();
 
@@ -311,13 +359,13 @@ public class MainActivity extends AppCompatActivity implements
 
         /* 4. set event listener */
 
-        playerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        timerStateToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                Log.d(TAG, "onCheckedChanged: ここかよ！");
 
+                // OFF→ONになった瞬間
                 if (isChecked) {
 
                     // 1セットめを開始
@@ -328,9 +376,13 @@ public class MainActivity extends AppCompatActivity implements
                         countDown = new CountDown(prepareTime, 1000);
                         countDown.start();
 
+
+                        currentSet = 1;
+
+
                         renewViews(prepareTime);
 
-                        playerToggleButton.setVisibility(View.INVISIBLE);
+                        timerStateToggleButton.setVisibility(View.INVISIBLE);
 
                         // 3/22 18:00 追加
                         invalidateOptionsMenu();
@@ -340,17 +392,17 @@ public class MainActivity extends AppCompatActivity implements
 
 
                     // 一時停止中(state: Pause)のとき、タイマーを再開
-                    kusoTimerReset();
+                    timerReset();
 
                     // renewTimerStateInfo(TimerState.Workout);
 
                     renewViews(workoutTime);
 
 
-                } else {  // 再生中のとき、一時停止する
+
+                } else { // ON→OFFになった瞬間 (再生中のとき、一時停止する)
 
                     if (currentSet >= MAX_TIMES) {
-                        System.out.println("状態: " + state);
                         return;
                     }
 
@@ -379,19 +431,19 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
 
+
                 DialogFragment dialog = new ResetDialogFragment();
                 dialog.show(getFragmentManager(), "dialog_basic");
 
-//                if(countDown != null) {
-                    Log.d(TAG, "はいとおったー3");
+                Log.d(TAG, "はいとおったー3");
                     countDown.cancel();
-//                }
+//              }
 
                 state = TimerState.Standby;
                 currentSet = 1;
 
-                playerToggleButton.setVisibility(View.VISIBLE);
-                playerToggleButton.setChecked(false);  // まさかここで、onCheckedChange が呼ばれてる？→合ってた
+                timerStateToggleButton.setVisibility(View.VISIBLE);
+                timerStateToggleButton.setChecked(false);  // まさかここで、onCheckedChange が呼ばれてる？→合ってた
 
                 invalidateOptionsMenu();
                 renewViews(workoutTime);
@@ -401,45 +453,660 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
+        /* Music Player Tab Event Listener */
+
+
+        musicSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                System.out.println("バー: " + progress);
+
+
+                if (fromUser == false) {
+                    return;
+                }
+
+
+                if (mPlayer == null) {
+                    return;
+                }
+
+                int time = currentSetPlaylist.get(playlistHead).getDurationMs();
+                time = time * progress / 100;
+                mPlayer.seekToPosition(null, time);
+
+
+                long ms = mPlayer.getPlaybackState().positionMs;
+                System.out.println(ms);
+                System.out.println(mPlayer.getMetadata().currentTrack.name);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
         previousSongButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
 
-                if (playlistHead != 0) {
-                    playlistHead -= 1;
+                System.out.println("現在のHEAD: " + playlistHead);
+
+                if (playlistHead == 0) {
+                    return;
                 }
 
-                mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                playlistHead -= 1;
+
+                // mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                play();
+
                 renewMusicInfo();
             }
         });
+
 
         nextSongButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                System.out.println("現在のHEAD: " + playlistHead);
+
+                if (playlistHead >= currentSetPlaylist.size() - 1) {
+                    return;
+                }
+
                 // 俺はこれを実質使ってない(てゆうかわからない)
                 // mPlayer.skipToNext(null);
+
                 playlistHead += 1;
 
-                // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
-                mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+                play();
+
                 renewMusicInfo();
             }
         });
 
 
-        musicPauseButton.setOnClickListener(new View.OnClickListener() {
+
+        musicPauseButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
             @Override
-            public void onClick(View v) {
-                mPlayer.pause(null);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+                    pause();
+                } else {
+                    resume();
+                }
+
             }
         });
+    }
+
+
+
+    /* callback method */
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        // Check if result comes from the correct activity
+        if (requestCode == REQUEST_CODE) {
+
+            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+
+            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+
+                // 追加！！いいの？？
+                mAccessToken = response.getAccessToken();
+
+                Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
+
+                Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
+
+                    @Override
+                    public void onInitialized(SpotifyPlayer spotifyPlayer) {
+                        mPlayer = spotifyPlayer;
+                        mPlayer.addConnectionStateCallback(MainActivity.this);
+                        mPlayer.addNotificationCallback(MainActivity.this);
+
+                        renewLoginStateTextView();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
+                        renewLoginStateTextView();
+                    }
+                });
+            }
+        }
+
+
+        else if (requestCode == LAUNCH_SETLIST_RESULT) {
+
+            System.out.println("セトリ画面からの復帰");
+
+            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
+            if (timerTextView.getText().toString().equals("")) {
+                return;
+            }
+
+            // これ、いれるか、いれないか、わかれる
+            // いれると自然。だが、ノータッチで勝手にfinishしたときにバグっていく。
+            // 制御できないと思ったら、ここをコメントアウトしろ
+            // TODO: timerReset
+
+            if (isTimerActive == false) {
+                timerReset();
+            } else {
+                System.out.println("華麗に回避");
+            }
+        }
+
+
+        // 設定フラグメント画面から復帰時の処理
+        else if (requestCode == LAUNCH_PREF) {
+
+            System.out.println("設定画面からの復帰");
+            setAllTimerSetting();
+            renewViews(workoutTime);
+        }
 
     }
 
 
-//    public void connectMusicAnalyzeAndParse() {
+
+    // onPlaybackEventの直後に来ます
+    @Override
+    public void onLoggedIn() {
+        Log.d("MainActivity", "User logged in");
+    }
+
+    @Override
+    public void onLoggedOut() {
+        Log.d("MainActivity", "User logged out");
+    }
+
+    @Override
+    public void onLoginFailed(Error error) {
+        Log.d("MainActivity", "Login failed");
+    }
+
+    @Override
+    public void onTemporaryError() {
+        Log.d("MainActivity", "Temporary error occurred");
+    }
+
+    @Override
+    public void onConnectionMessage(String message) {
+        Log.d("MainActivity", "Received connection message: " + message);
+    }
+
+    @Override
+    public void onPlaybackEvent(PlayerEvent playerEvent) {
+
+        Log.d("MainActivity", "Playback event received: " + playerEvent.name());
+
+
+        // 曲が始まった時:
+        // kSpPlaybackNotifyBecameActive → kSpPlaybackNotifyNext → kSpPlaybackNotifyMetadataChanged →
+        // kSpPlaybackNotifyContextChanged → kSpPlaybackNotifyTrackChanged → kSpPlaybackEventAudioFlush →
+        // kSpPlaybackNotifyPlay
+
+
+        // 曲再生中:
+
+
+        // 曲が終わった時:
+        // kSpPlaybackNotifyTrackDelivered → kSpPlaybackNotifyAudioDeliveryDone → kSpPlaybackNotifyPause →
+        // kSpPlaybackNotifyMetadataChanged → kSpPlaybackNotifyTrackChanged
+
+
+
+        switch (playerEvent) {
+
+            case kSpPlaybackNotifyBecameActive:
+                System.out.println("kSpPlaybackNotifyBecameActive ようわからん");
+                break;
+
+            case kSpPlaybackNotifyTrackChanged:
+                System.out.println("kSpPlaybackNotifyTrackChangedだよ↑");
+                break;
+
+            case kSpPlaybackNotifyNext:
+                System.out.println("kSpPlaybackNotifyNextだっちゃ☆");
+                break;
+
+            case kSpPlaybackNotifyMetadataChanged:
+                System.out.println("kSpPlaybackNotifyMetadataChanged だいぶ謎だわ");
+                break;
+
+            case kSpPlaybackNotifyContextChanged:
+                System.out.println("kSpPlaybackNotifyContextChanged　最大の謎だわ");
+                break;
+
+            case kSpPlaybackNotifyPlay:
+                System.out.println("kSpPlaybackNotifyPlay　ふーん");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    public void onPlaybackError(Error error) {
+        Log.d("MainActivity", "Playback error received: " + error.name());
+        switch (error) {
+            // Handle error type as necessary
+            default:
+                break;
+        }
+    }
+
+
+
+    @Override
+    protected void onStop() {
+
+        if (state == TimerState.Standby || state == TimerState.Break) {
+
+        } else {
+            Log.d(TAG, "はいとおったー4");
+            System.out.println("遷移直前の状態: " + state);
+            countDown.cancel();
+        }
+
+
+        // タイマーの種類に応じて退避行動の挙動を変化
+//        switch (state) {
+//
+//            case Standby:
+//                break;
+//
+//            case Workout:
+//                break;
+//
+//            case Pause:
+//                break;
+//
+//            case Break:
+//                break;
+//
+//            case Prepare:
+//                break;
+//        }
+
+        super.onStop();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+
+        // VERY IMPORTANT! This must always be called or else you will leak resources
+        Spotify.destroyPlayer(this);
+
+        super.onDestroy();
+    }
+
+
+
+    /* アクションバーに設定画面へのボタン追加 */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        if (state != TimerState.Standby) {
+            return false;
+        }
+
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case R.id.pref:
+
+                Intent i = new Intent(this, MyConfigActivity.class);
+
+                // 戻るボタンを押すとfinish()が内部的に呼ばれているため、
+                // onActivityResultで処理を加えられる
+                startActivityForResult(i, LAUNCH_PREF);
+
+                return true;
+
+            case R.id.login:
+
+                doAuth();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+    /* Inner Class */
+
+
+    Boolean isTimerActive = false;
+
+
+    private class CountDown extends CountDownTimer {
+
+
+        public CountDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+
+        @Override
+        public void onFinish() {
+
+            switch (state) {
+
+                case Workout:
+
+                    if (currentSet >= MAX_TIMES) {
+
+                        invalidateOptionsMenu();
+
+                        state = TimerState.Standby;
+
+                        countDown.cancel();
+
+                        timerTextView.setText("");
+                        // ここで、onSetChecked が走ってしまうので、onSetCheckedに回避処理を書いている
+                        timerStateToggleButton.setChecked(false);
+
+
+                        timerStateToggleButton.setVisibility(View.VISIBLE);
+                        cancelButton.setVisibility(View.INVISIBLE);
+
+                        renewTimerStateInfo(state);
+
+                        launchSetListActivity();
+
+                        return;
+                    }
+
+
+                    Log.d(TAG, "ふつーの workout onFinish");
+
+                    state = TimerState.Break;
+                    countDown = new CountDown(breakTime, 1000);
+                    countDown.start();
+
+                    timerStateToggleButton.setVisibility(View.INVISIBLE);
+                    renewViews(breakTime);
+
+                    launchSetListActivity();
+
+                    break;
+
+
+                case Break:
+
+                    state = TimerState.Prepare;
+
+                    countDown = new CountDown(prepareTime, 1000);
+
+                    Log.d(TAG, "セットされたprepareTime: " + prepareTime);
+
+                    countDown.start();
+
+                    increaseCurrentSet();
+
+                    renewViews(prepareTime);
+
+                    // mPlayer.pause(null);
+
+
+                    // タイマーサイクル中、音楽を止めているところはここ！
+                    pause();
+
+
+                    break;
+
+                case Prepare:
+
+                    state = TimerState.Workout;
+                    countDown = new CountDown(workoutTime, 1000);
+                    countDown.start();
+
+                    timerStateToggleButton.setVisibility(View.VISIBLE);
+                    cancelButton.setVisibility(View.VISIBLE);
+
+                    renewViews(workoutTime);
+
+                    // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
+                    createThisSetPlaylist();
+
+                    break;
+            };
+        }
+
+
+        // Timerのカウント周期で呼ばれる
+        @Override
+        public void onTick(long millisUntilFinished) {
+
+            isTimerActive = true;
+            renewTimerInfo(millisUntilFinished);
+
+        }
+    }
+
+
+    /* Helper Method */
+
+    private void doAuth() {
+
+        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
+                AuthenticationResponse.Type.TOKEN,
+                REDIRECT_URI);
+        //builder.setScopes(new String[]{"user-read-private", "streaming"});
+        builder.setScopes(new String[]{
+                "user-read-private",
+                "playlist-modify-private",
+                "playlist-modify-public",
+                "streaming"});
+        AuthenticationRequest request = builder.build();
+        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+    }
+
+
+    private void setAllTimerSetting() {
+
+        workoutTime = Long.valueOf(pref.getString("workout_time", "9000"));
+        breakTime   = Long.valueOf(pref.getString("break_time", "9000"));
+        prepareTime = Long.valueOf(pref.getString("prepare_time", "9000"));
+        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
+
+    }
+
+
+    private void increaseCurrentSet() { currentSet += 1; }
+
+
+    private void launchSetListActivity() {
+
+        Intent i = new Intent(this, SetListResultActivity.class);
+
+        i.putExtra("playlist", currentSetPlaylist);
+        if (mAccessToken != null) {
+            i.putExtra("token", mAccessToken);
+        }
+        i.putExtra("current_set", currentSet);
+        i.putExtra("max_set", MAX_TIMES);
+
+        startActivityForResult(i, LAUNCH_SETLIST_RESULT);
+    }
+
+
+
+    private void createThisSetPlaylist() {
+
+        // TODO: 自分のアカウント（日本アカウント）じゃきけない曲まで選出されてるっぽい。
+        // だから、そのとき、なにもきこえてこないんじゃないの。
+
+        try {
+            //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
+            URL url = new URL("https://api.spotify.com/v1/recommendations?" +
+                    //"seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
+                    "seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
+                    //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
+                    //"min_instrumentalness=0.8&" +
+                    "market=JP&" +
+                    "limit=15");
+
+
+            final Request request = new Request.Builder()
+                    // URLを生成
+                    .url(url.toString())
+                    .get()
+                    .addHeader("Authorization", "Bearer " + mAccessToken)
+                    .build();
+
+
+            // クライアントオブジェクトを作成する
+            final OkHttpClient client = new OkHttpClient();
+
+
+            // 新しいリクエストを行う
+            client.newCall(request).enqueue(new Callback() {
+
+                // 通信が成功した時
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
+                    String responseBody = response.body().string();
+
+                    TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
+
+                    if (result.getTracks() == null) {
+                        return;
+                    }
+
+                    // 前の設定を空に
+                    currentSetPlaylist = new ArrayList<>();
+                    playlistHead       = 0;
+
+
+                    long currentTotalDuration = 0;
+
+                    // 25分 = 1500000milli 15分 = 900000milli
+                    for (Track eachTrack: result.getTracks()) {
+
+                        currentSetPlaylist.add(eachTrack);
+                        currentTotalDuration += eachTrack.getDurationMs();
+
+                        System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
+                        System.out.println("現在の合計時間: " + currentTotalDuration);
+
+                        // workoutTime / 1500000
+                        if (currentTotalDuration > 1500000) {
+                            break;
+                        }
+                    }
+
+                    if (mAccessToken != null && !currentSetPlaylist.isEmpty()) {
+                        playMusic();
+                    }
+                }
+
+
+                // 通信が失敗した時
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    // new Handler().post って書いてたから、
+                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
+                    // で落ちてた？？？
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("OKHttp", "エラー♪");
+                        }
+                    });
+                }
+
+            });
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void playMusic() {
+
+        //enqueueMusicToPlayer();
+
+        // ここは、こうやってわざわざメインスレッドで呼ばないとダメ。
+        Handler mHandler = new Handler(Looper.getMainLooper());
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                renewMusicInfo();
+            }
+        });
+
+        play();
+
+    }
+
+
+    private void play() {
+        if (mPlayer != null) {
+            // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
+            mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
+        }
+    }
+
+
+    private void pause() {
+
+        if (mPlayer == null) {
+            return;
+        }
+        mPlayer.pause(null);
+    }
+
+
+    private void resume() {
+
+        if (mPlayer == null) {
+            return;
+        }
+        mPlayer.resume(null);
+    }
+
+
+    //    public void connectMusicAnalyzeAndParse() {
 //
 //        System.out.println("押されてる");
 //
@@ -592,6 +1259,41 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
+    /* renew UI */
+
+
+    private void initializeViewComponents() {
+
+
+        jacketImageView = (ImageView) findViewById(R.id.jacketImageView);
+
+        loginStateTextView = (TextView) findViewById(R.id.loginStateTextView);
+        loginStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+        setStateTextView   = (TextView) findViewById(R.id.setStateTextView);
+
+        timerStateTextView = (TextView) findViewById(R.id.timerStateTextView);
+        timerStateTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+        nowMusicTextView   = (TextView) findViewById(R.id.nowMusicTextView);
+        nowMusicTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+        timerTextView      = (TextView) findViewById(R.id.timerTextView);
+        timerTextView.setTypeface(Typeface.createFromAsset(getAssets(), "Lato-Regular.ttf"));
+
+
+        cancelButton       = (Button) findViewById(R.id.cancelButton);
+        timerStateToggleButton = (ToggleButton) findViewById(R.id.timerStateToggleButton);
+
+
+        musicSeekBar       = (SeekBar) findViewById(R.id.musicSeekBar);
+        previousSongButton = (Button) findViewById(R.id.previousSongButton);
+        nextSongButton     = (Button) findViewById(R.id.nextSongButton);
+        musicPauseButton   = (ToggleButton) findViewById(R.id.musicPauseButton);
+
+    }
+
+
     private void addFilterToImageView() {
 
         float brightness = -125;
@@ -608,562 +1310,6 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-
-
-    /* callback method */
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-
-        super.onActivityResult(requestCode, resultCode, intent);
-
-        // Check if result comes from the correct activity
-        if (requestCode == REQUEST_CODE) {
-
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-
-            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-
-                // 追加！！いいの？？
-                mAccessToken = response.getAccessToken();
-
-                Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
-
-                Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
-                    @Override
-                    public void onInitialized(SpotifyPlayer spotifyPlayer) {
-                        mPlayer = spotifyPlayer;
-                        mPlayer.addConnectionStateCallback(MainActivity.this);
-                        mPlayer.addNotificationCallback(MainActivity.this);
-
-                        renewLoginStateTextView();
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
-                        renewLoginStateTextView();
-                    }
-                });
-            }
-        }
-
-
-        // TODO 怪しい1
-        else if (requestCode == LAUNCH_SETLIST_RESULT) {
-
-            System.out.println("セトリ画面からの復帰");
-
-
-
-            // ターム終了直後は時間表示が空のためフォーマットできないため早期リターン
-            if (timerTextView.getText().toString().equals("")) {
-                return;
-            }
-
-            // これ、いれるか、いれないか、わかれる
-            // いれると自然。だが、ノータッチで勝手にfinishしたときにバグっていく。
-            // 制御できないと思ったら、ここをコメントアウトしろ
-
-            // TODO: kusoTimerReset
-
-            if (isTimerActive == false) {
-                kusoTimerReset();
-            } else {
-                System.out.println("華麗に回避");
-            }
-
-
-
-
-            // ここ書いててまじひどい目あった。てかなんだこのコード
-
-//            String[] tmp = (timerTextView.getText().toString()).split(":", 0);
-//
-//            int minute = Integer.parseInt(tmp[0]) * 1000 * 60;
-//            int second = Integer.parseInt(tmp[1]) * 1000;
-//            countDown = new CountDown(minute + second, 1000);
-//            countDown.start();
-
-        }
-
-
-        // 設定フラグメント画面から復帰時の処理
-        else if (requestCode == LAUNCH_PREF) {
-
-            System.out.println("設定画面からの復帰");
-
-            System.out.println("状態: " + state);
-
-            setAllTimeSetting();
-
-            renewViews(workoutTime);
-
-        }
-
-    }
-
-    private void setAllTimeSetting() {
-
-        workoutTime = Long.valueOf(pref.getString("workout_time", "9000"));
-        breakTime   = Long.valueOf(pref.getString("break_time", "9000"));
-        prepareTime = Long.valueOf(pref.getString("prepare_time", "9000"));
-        MAX_TIMES   = Integer.parseInt(pref.getString("set", "4"));
-
-    }
-
-
-    // onPlaybackEventの直後に来ます
-    @Override
-    public void onLoggedIn() {
-        Log.d("MainActivity", "User logged in");
-    }
-
-    @Override
-    public void onLoggedOut() {
-        Log.d("MainActivity", "User logged out");
-    }
-
-    @Override
-    public void onLoginFailed(Error error) {
-        Log.d("MainActivity", "Login failed");
-    }
-
-    @Override
-    public void onTemporaryError() {
-        Log.d("MainActivity", "Temporary error occurred");
-    }
-
-    @Override
-    public void onConnectionMessage(String message) {
-        Log.d("MainActivity", "Received connection message: " + message);
-    }
-
-    @Override
-    public void onPlaybackEvent(PlayerEvent playerEvent) {
-
-        Log.d("MainActivity", "Playback event received: " + playerEvent.name());
-
-
-        // 曲が始まった時:
-        // kSpPlaybackNotifyBecameActive → kSpPlaybackNotifyNext → kSpPlaybackNotifyMetadataChanged →
-        // kSpPlaybackNotifyContextChanged → kSpPlaybackNotifyTrackChanged → kSpPlaybackEventAudioFlush →
-        // kSpPlaybackNotifyPlay
-
-
-        // 曲再生中:
-
-
-        // 曲が終わった時:
-        // kSpPlaybackNotifyTrackDelivered → kSpPlaybackNotifyAudioDeliveryDone → kSpPlaybackNotifyPause →
-        // kSpPlaybackNotifyMetadataChanged → kSpPlaybackNotifyTrackChanged
-
-
-
-        switch (playerEvent) {
-
-            case kSpPlaybackNotifyBecameActive:
-                System.out.println("kSpPlaybackNotifyBecameActive ようわからん");
-                break;
-
-            case kSpPlaybackNotifyTrackChanged:
-                System.out.println("kSpPlaybackNotifyTrackChangedだよ↑");
-                break;
-
-            case kSpPlaybackNotifyNext:
-                System.out.println("kSpPlaybackNotifyNextだっちゃ☆");
-                break;
-
-            case kSpPlaybackNotifyMetadataChanged:
-                System.out.println("kSpPlaybackNotifyMetadataChanged だいぶ謎だわ");
-                break;
-
-            case kSpPlaybackNotifyContextChanged:
-                System.out.println("kSpPlaybackNotifyContextChanged　最大の謎だわ");
-                break;
-
-            case kSpPlaybackNotifyPlay:
-                System.out.println("kSpPlaybackNotifyPlay　ふーん");
-                break;
-
-            default:
-                break;
-        }
-    }
-
-
-    @Override
-    public void onPlaybackError(Error error) {
-        Log.d("MainActivity", "Playback error received: " + error.name());
-        switch (error) {
-            // Handle error type as necessary
-            default:
-                break;
-        }
-    }
-
-
-
-
-
-    @Override
-    protected void onStop() {
-
-        if (state == TimerState.Standby || state == TimerState.Break) {
-
-        } else {
-            Log.d(TAG, "はいとおったー4");
-            System.out.println("遷移直前の状態: " + state);
-            countDown.cancel();
-        }
-
-
-        // タイマーの種類に応じて退避行動の挙動を変化
-//        switch (state) {
-//
-//            case Standby:
-//                break;
-//
-//            case Workout:
-//                break;
-//
-//            case Pause:
-//                break;
-//
-//            case Break:
-//                break;
-//
-//            case Prepare:
-//                break;
-//        }
-
-        super.onStop();
-    }
-
-
-    @Override
-    protected void onDestroy() {
-
-        // VERY IMPORTANT! This must always be called or else you will leak resources
-        Spotify.destroyPlayer(this);
-
-        super.onDestroy();
-    }
-
-
-
-    /* アクションバーに設定画面へのボタン追加 */
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        if (state != TimerState.Standby) {
-            return false;
-        }
-
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-
-            case R.id.pref:
-
-                Intent i = new Intent(this, MyConfigActivity.class);
-
-                // 戻るボタンを押すとfinish()が内部的に呼ばれているため、
-                // onActivityResultで処理を加えられる
-                startActivityForResult(i, LAUNCH_PREF);
-
-                return true;
-
-            case R.id.login:
-
-                doAuth();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-
-
-    /* Inner Class */
-
-
-    Boolean isTimerActive = false;
-
-    private class CountDown extends CountDownTimer {
-
-
-        public CountDown(long millisInFuture, long countDownInterval) {
-            super(millisInFuture, countDownInterval);
-        }
-
-
-        @Override
-        public void onFinish() {
-
-            switch (state) {
-
-                case Workout:
-
-                    if (currentSet >= MAX_TIMES) {
-
-                        Log.d(TAG, "maxのほう");
-
-                        // 3/22 18:00 追加
-                        invalidateOptionsMenu();
-
-                        state = TimerState.Standby;
-                        System.out.println("状態: " + state);
-
-//                      if(countDown != null) {
-                        Log.d(TAG, "はいとおったー5");
-                        countDown.cancel();
-//                      }
-
-
-                        timerTextView.setText("");
-                        // ここで、onSetCheckedが走ってしまうので、onSetCheckedに回避処理を書いている
-                        playerToggleButton.setChecked(false);
-
-
-                        playerToggleButton.setVisibility(View.VISIBLE);
-                        cancelButton.setVisibility(View.INVISIBLE);
-
-                        renewTimerStateInfo(state);
-
-                        launchSetListActivity();
-
-                        return;
-                    }
-
-
-                    Log.d(TAG, "ふつーの workout onFinish");
-
-                    state = TimerState.Break;
-                    countDown = new CountDown(breakTime, 1000);
-                    countDown.start();
-
-                    playerToggleButton.setVisibility(View.INVISIBLE);
-                    renewViews(breakTime);
-
-                    launchSetListActivity();
-
-                    break;
-
-
-                case Break:
-
-                    state = TimerState.Prepare;
-
-                    countDown = new CountDown(prepareTime, 1000);
-
-                    Log.d(TAG, "セットされたprepareTime: " + prepareTime);
-
-                    countDown.start();
-
-                    // TODO: ここも超絶怪しい
-                    increaseCurrentSet();
-
-                    renewViews(prepareTime);
-
-                    if (mPlayer != null) {
-                        mPlayer.pause(null);
-                    }
-
-                    break;
-
-                case Prepare:
-
-                    state = TimerState.Workout;
-                    countDown = new CountDown(workoutTime, 1000);
-                    countDown.start();
-
-                    playerToggleButton.setVisibility(View.VISIBLE);
-                    cancelButton.setVisibility(View.VISIBLE);
-
-                    renewViews(workoutTime);
-
-                    // たぶんここ！！セトリを生成し、再生を開始する絶好のタイミングは。
-                    createThisSetPlaylist();
-
-                    break;
-            };
-        }
-
-
-        // Timerのカウント周期で呼ばれる
-        @Override
-        public void onTick(long millisUntilFinished) {
-
-            isTimerActive = true;
-
-            renewTimerInfo(millisUntilFinished);
-
-            // System.out.println("おら！画面1の残り時間: " + millisUntilFinished);
-        }
-    }
-
-
-    /* Helper Method */
-
-    private void doAuth() {
-
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-                AuthenticationResponse.Type.TOKEN,
-                REDIRECT_URI);
-        //builder.setScopes(new String[]{"user-read-private", "streaming"});
-        builder.setScopes(new String[]{
-                "user-read-private",
-                "playlist-modify-private",
-                "playlist-modify-public",
-                "streaming"});
-        AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
-
-
-    }
-
-    private void increaseCurrentSet() { currentSet += 1; }
-
-    private void launchSetListActivity() {
-
-        Intent i = new Intent(this, SetListResultActivity.class);
-
-        i.putExtra("playlist", currentSetPlaylist);
-        if (mAccessToken != null) {
-            i.putExtra("token", mAccessToken);
-        }
-        i.putExtra("current_set", currentSet);
-        i.putExtra("max_set", MAX_TIMES);
-
-        startActivityForResult(i, LAUNCH_SETLIST_RESULT);
-    }
-
-
-
-    private void createThisSetPlaylist() {
-
-        // TODO: 自分のアカウント（日本アカウント）じゃきけない曲まで選出されてるっぽい。
-        // だから、そのとき、なにもきこえてこないんじゃないの。
-
-        try {
-            //  "j-idol", "j-pop", "j-rock", industrial, chill, techno
-            URL url = new URL("https://api.spotify.com/v1/recommendations?" +
-                    "seed_genres=techno&" +  // なんかこのジャンル指定がやばいっぽいな
-                    //"seed_artists=115IWAVy4OTxhE0xdDef1c&" +  // パスピエ
-                    //"seed_tracks=3p4ELetqoTwFpsnUkEirzc&" +   // スーパーカー
-                    //"min_instrumentalness=0.8&" +
-                    "market=JP&" +
-                    "limit=15");
-
-
-            final Request request = new Request.Builder()
-                    // URLを生成
-                    .url(url.toString())
-                    .get()
-                    .addHeader("Authorization", "Bearer " + mAccessToken)
-                    .build();
-
-
-            // クライアントオブジェクトを作成する
-            final OkHttpClient client = new OkHttpClient();
-
-
-            // 新しいリクエストを行う
-            client.newCall(request).enqueue(new Callback() {
-                // 通信が成功した時
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-
-                    // ここ、最後は toStringじゃないぞ、まじで気をつけろ
-                    String responseBody = response.body().string();
-
-                    TrackForPLModel result = new Gson().fromJson(responseBody, TrackForPLModel.class);
-
-                    if (result.getTracks() == null) {
-                        return;
-                    }
-
-                    // 前の設定を空に
-                    currentSetPlaylist = new ArrayList<>();
-
-
-                    long currentTotalDuration = 0;
-
-                    // 25分 = 1500000milli 15分 = 900000milli
-                    for (Track eachTrack: result.getTracks()) {
-
-                        currentSetPlaylist.add(eachTrack);
-                        currentTotalDuration += eachTrack.getDurationMs();
-
-                        System.out.println(eachTrack.getName() + " が今回のプレイリストに選出！");
-                        System.out.println("現在の合計時間: " + currentTotalDuration);
-
-                        // workoutTime / 1500000
-                        if (currentTotalDuration > 1500000) {
-                            break;
-                        }
-                    }
-
-
-                    if (mAccessToken != null && !currentSetPlaylist.isEmpty()) {
-                        playMusic();
-                    }
-                }
-
-
-                // 通信が失敗した時
-                @Override
-                public void onFailure(Call call, final IOException e) {
-                    // new Handler().post って書いてたから、
-                    // java.lang.RuntimeException: Can’t create handler inside thread that has not called Looper.prepare()
-                    // で落ちてた？？？
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d("OKHttp", "エラー♪");
-                        }
-                    });
-                }
-
-            });
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void playMusic() {
-
-        //enqueueMusicToPlayer();
-
-        // ここは、こうやってわざわざメインスレッドで呼ばないとダメ。
-        Handler mHandler = new Handler(Looper.getMainLooper());
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                renewMusicInfo();
-            }
-        });
-
-        //mPlayer.skipToNext(null);
-        // ここの第３引数はとりま0じゃないとだめっぽい、てかこのindexってなんなんだ...
-        mPlayer.playUri(null, "spotify:track:" + currentSetPlaylist.get(playlistHead).getId(), 0, 0);
-
-    }
-
-
-    /* renew UI */
 
     private void renewViews(Long kind_of_timer) {
         renewSetInfo();
